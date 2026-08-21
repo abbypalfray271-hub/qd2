@@ -4,6 +4,8 @@ import { CheckSquare, Square, FileText, FileSpreadsheet, Eye, EyeOff, Search, Sp
 
 interface ModulesViewProps {
   examsData: Exam[];
+  selectedQKeys?: Set<string>;
+  onToggleSelectQ?: (qKey: string) => void;
 }
 
 export const MODULE_CATEGORIES = [
@@ -17,7 +19,7 @@ export const MODULE_CATEGORIES = [
   { id: 'writing', name: '七、写作', icon: '✍️', keyword: '写作' }
 ];
 
-export const ModulesView: React.FC<ModulesViewProps> = ({ examsData }) => {
+export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKeys: externalQKeys, onToggleSelectQ: externalToggleQ }) => {
   const [selectedModule, setSelectedModule] = useState<string>('base');
   const [sourceFilter, setSourceFilter] = useState<'all' | '正式真题' | '区县模拟'>('正式真题');
   const [yearFilter, setYearFilter] = useState<string>('全部');
@@ -28,7 +30,19 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData }) => {
   const [mode, setMode] = useState<'student' | 'teacher'>('student');
   
   // Checkboxes
-  const [selectedQKeys, setSelectedQKeys] = useState<Set<string>>(new Set());
+  const [internalQKeys, setInternalQKeys] = useState<Set<string>>(new Set());
+  const selectedQKeys = externalQKeys || internalQKeys;
+
+  const handleToggleSelectQ = (qKey: string) => {
+    if (externalToggleQ) {
+      externalToggleQ(qKey);
+    } else {
+      const next = new Set(internalQKeys);
+      if (next.has(qKey)) next.delete(qKey);
+      else next.add(qKey);
+      setInternalQKeys(next);
+    }
+  };
 
   // Interactive student option selections
   const [userSelectedOpts, setUserSelectedOpts] = useState<Record<string, string>>({});
@@ -95,25 +109,20 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData }) => {
     return list;
   }, [examsData, selectedModule, sourceFilter, yearFilter, districtFilter, searchQuery]);
 
-  // Selection Handlers
-  const handleToggleSelectQ = (qKey: string) => {
-    const next = new Set(selectedQKeys);
-    if (next.has(qKey)) {
-      next.delete(qKey);
-    } else {
-      next.add(qKey);
-    }
-    setSelectedQKeys(next);
-  };
+// Selection Handlers handled above
 
   const handleSelectAllCurrent = () => {
-    const next = new Set(selectedQKeys);
-    categorizedQuestions.forEach(item => next.add(item.qKey));
-    setSelectedQKeys(next);
+    categorizedQuestions.forEach(item => {
+      if (!selectedQKeys.has(item.qKey)) {
+        handleToggleSelectQ(item.qKey);
+      }
+    });
   };
 
   const handleClearSelection = () => {
-    setSelectedQKeys(new Set());
+    selectedQKeys.forEach(qKey => {
+      handleToggleSelectQ(qKey);
+    });
   };
 
   // Student mode interactive option selection
@@ -245,7 +254,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData }) => {
               className={`chip-btn ${selectedModule === cat.id ? 'active' : ''}`}
               onClick={() => {
                 setSelectedModule(cat.id);
-                setSelectedQKeys(new Set());
+                handleClearSelection();
               }}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem' }}
             >

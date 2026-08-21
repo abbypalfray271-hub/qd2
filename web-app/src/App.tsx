@@ -1,14 +1,13 @@
+import { CartView } from './components/CartView';
 import { ModulesView } from './components/ModulesView';
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   BookOpen, 
   Columns, 
   Layers, 
-  Printer, 
+  ShoppingCart, 
   UploadCloud, 
   Search, 
-  Eye, 
-  EyeOff, 
   CheckCircle2, 
   FileText,
   Sparkles,
@@ -16,7 +15,8 @@ import {
   X,
   Loader2,
   AlertTriangle,
-  Bookmark
+  Bookmark,
+  Eye
 } from 'lucide-react';
 import type { Exam, ActiveTab } from './types';
 
@@ -113,6 +113,17 @@ export function App() {
   const [errorMsg, setErrorMsg] = useState<string>('');
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('catalog');
+  const [selectedQKeys, setSelectedQKeys] = useState<Set<string>>(new Set());
+
+  const handleToggleSelectQ = (qKey: string) => {
+    const next = new Set(selectedQKeys);
+    if (next.has(qKey)) {
+      next.delete(qKey);
+    } else {
+      next.add(qKey);
+    }
+    setSelectedQKeys(next);
+  };
   const [selectedCategory, setSelectedCategory] = useState<string>('全部');
   const [selectedYear, setSelectedYear] = useState<string>('全部');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('全部');
@@ -120,7 +131,7 @@ export function App() {
   
   // Single Exam Viewer Modal State
   const [viewingExam, setViewingExam] = useState<Exam | null>(null);
-  const [showAnswers, setShowAnswers] = useState<boolean>(true);
+  // showAnswers state removed for CartView
 
   // Side-by-Side Comparison State
   const [leftExam, setLeftExam] = useState<Exam | null>(null);
@@ -173,9 +184,7 @@ export function App() {
     });
   }, [examsData, selectedCategory, selectedYear, selectedDistrict, searchQuery]);
 
-  const handlePrint = () => {
-    window.print();
-  };
+// handlePrint function removed for CartView
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -239,10 +248,10 @@ export function App() {
               <Layers className="w-4 h-4" /> 7大考点分项
             </button>
             <button 
-              className={`nav-btn ${activeTab === 'print' ? 'active' : ''}`}
-              onClick={() => setActiveTab('print')}
+              className={`nav-btn ${activeTab === 'cart' ? 'active' : ''}`}
+              onClick={() => setActiveTab('cart')}
             >
-              <Printer className="w-4 h-4" /> 一键免排版打印
+              <ShoppingCart className="w-4 h-4" /> 一键免排版打印
             </button>
             <button 
               className={`nav-btn ${activeTab === 'admin' ? 'active' : ''}`}
@@ -536,93 +545,20 @@ export function App() {
 
         {/* TAB 3: Print Console */}
         {activeTab === 'modules' && (
-          <ModulesView examsData={examsData} />
+          <ModulesView examsData={examsData} selectedQKeys={selectedQKeys} onToggleSelectQ={handleToggleSelectQ} />
         )}
 
-        {activeTab === 'print' && (
-          <div>
-            <div className="no-print" style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <Printer className="w-5 h-5 text-sky-500" /> 免排版一键 A4/A3 标准打印控制台
-                  </h2>
-                  <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
-                    一键打印无需手动调节版面，自动适配标准考试试卷排版。
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <button 
-                    className="action-btn"
-                    onClick={() => setShowAnswers(!showAnswers)}
-                  >
-                    {showAnswers ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
-                    {showAnswers ? '切换为学生卷(隐答案)' : '切换为教师卷(含解析)'}
-                  </button>
-                  <button 
-                    className="action-btn action-btn-primary"
-                    onClick={handlePrint}
-                  >
-                    <Printer className="w-4 h-4" /> 唤起系统打印 (或存PDF)
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Print View Preview */}
-            <div className="print-page" style={{ background: '#fff', padding: '2rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              <div className="exam-print-header">
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-                  {leftExam ? leftExam.title : '青岛市中考语文模拟练习试题卷'}
-                </h1>
-                <div style={{ fontSize: '0.9rem', color: '#475569' }}>
-                  考试时间：120 分钟 &nbsp;|&nbsp; 满分：120 分 &nbsp;|&nbsp; 姓名：___________ &nbsp;|&nbsp; 准考证号：___________
-                </div>
-              </div>
-
-              {leftExam && leftExam.questions.map((q, idx) => {
-                const showSectionHeader = idx === 0 || q.section_title !== leftExam.questions[idx - 1].section_title;
-                const showGroupHeader = idx === 0 || q.group_title !== leftExam.questions[idx - 1].group_title;
-
-                return (
-                  <div key={q.id} style={{ marginBottom: '1.5rem', pageBreakInside: 'avoid' }}>
-                    {showSectionHeader && q.section_title && (
-                      <div style={{ fontWeight: 800, fontSize: '1.1rem', margin: '1rem 0 0.5rem', borderBottom: '1.5px solid #000', paddingBottom: '0.2rem' }}>
-                        <RichContent content={q.section_title} />
-                      </div>
-                    )}
-                    {showGroupHeader && q.group_title && (
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', margin: '0.5rem 0', color: '#1e293b' }}>
-                        <RichContent content={q.group_title} />
-                      </div>
-                    )}
-
-                    <div style={{ fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.5rem', display: 'flex', gap: '0.3rem' }}>
-                      <span>{idx + 1}.</span> <RichContent content={cleanStem(q.stem)} />
-                    </div>
-                    {q.passage && <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '6px', fontSize: '0.9rem', marginBottom: '0.75rem' }}><RichContent content={q.passage} /></div>}
-                    {q.options.length > 0 && (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                        {q.options.map((opt, o_idx) => (
-                          <div key={o_idx}><RichContent content={opt} /></div>
-                        ))}
-                      </div>
-                    )}
-
-                    {showAnswers && (q.answer || q.analysis) && (
-                      <div style={{ background: '#f0fdf4', padding: '0.75rem', borderRadius: '6px', fontSize: '0.85rem', borderLeft: '3px solid #16a34a' }}>
-                        {q.answer && <div><strong>【答案】</strong>: <RichContent content={q.answer} /></div>}
-                        {q.analysis && <div style={{ marginTop: '0.3rem' }}><strong>【解析】</strong>: <RichContent content={q.analysis} /></div>}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        {activeTab === 'cart' && (
+          <CartView
+            examsData={examsData}
+            selectedQKeys={selectedQKeys}
+            onToggleSelectQ={handleToggleSelectQ}
+            onClearAll={() => setSelectedQKeys(new Set())}
+            onNavigateToModules={() => setActiveTab('modules')}
+          />
         )}
 
-        {/* TAB 4: Admin Drag & Drop Portal */}
+                {/* TAB 4: Admin Drag & Drop Portal */}
         {activeTab === 'admin' && (
           <div className="no-print">
             <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>

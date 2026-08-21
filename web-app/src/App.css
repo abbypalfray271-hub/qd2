@@ -197,3 +197,27 @@
   flex-direction: column;
   gap: 1.25rem;
 }
+
+
+/* ==================================================
+   🛒 下载总览 (ShoppingCart) 极简组卷与 A4 排版专有样式
+   ================================================== */
+.cart-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  line-height: 1;
+}
+
+.cart-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}

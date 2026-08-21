@@ -32,4 +32,4 @@ export interface Exam {
   questions: Question[];
 }
 
-export type ActiveTab = 'catalog' | 'compare' | 'modules' | 'print' | 'admin';
+export type ActiveTab = 'catalog' | 'compare' | 'modules' | 'cart' | 'admin';
