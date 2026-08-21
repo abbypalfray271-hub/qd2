@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Exam, Question } from '../types';
-import { ShoppingCart, FileText, FileSpreadsheet, Trash2, ArrowRight } from 'lucide-react';
+import { ShoppingCart, FileText, FileSpreadsheet, Trash2, ArrowRight, CheckSquare, Square } from 'lucide-react';
 
 interface CartViewProps {
   examsData: Exam[];
@@ -18,7 +18,46 @@ export const CartView: React.FC<CartViewProps> = ({
   onNavigateToModules
 }) => {
   const [paperTitle, setPaperTitle] = useState<string>('2026年青岛市中考语文专项练习组卷');
-  const [mode, setMode] = useState<'student' | 'teacher'>('student');
+
+  // Global Checkbox Controls
+  const [globalIncludeAnswers, setGlobalIncludeAnswers] = useState<boolean>(false);
+  const [globalIncludePassages, setGlobalIncludePassages] = useState<boolean>(true);
+
+  // Per-Question Custom Overrides Maps
+  const [customAnswersMap, setCustomAnswersMap] = useState<Record<string, boolean>>({});
+  const [customPassagesMap, setCustomPassagesMap] = useState<Record<string, boolean>>({});
+
+  // Helper resolvers
+  const isAnswerIncluded = (qKey: string) => {
+    return customAnswersMap[qKey] !== undefined ? customAnswersMap[qKey] : globalIncludeAnswers;
+  };
+
+  const isPassageIncluded = (qKey: string) => {
+    return customPassagesMap[qKey] !== undefined ? customPassagesMap[qKey] : globalIncludePassages;
+  };
+
+  // Toggle Handlers
+  const handleToggleGlobalAnswers = () => {
+    const next = !globalIncludeAnswers;
+    setGlobalIncludeAnswers(next);
+    setCustomAnswersMap({}); // Reset custom overrides when global toggled
+  };
+
+  const handleToggleGlobalPassages = () => {
+    const next = !globalIncludePassages;
+    setGlobalIncludePassages(next);
+    setCustomPassagesMap({}); // Reset custom overrides when global toggled
+  };
+
+  const handleToggleSingleAnswer = (qKey: string) => {
+    const curr = isAnswerIncluded(qKey);
+    setCustomAnswersMap(prev => ({ ...prev, [qKey]: !curr }));
+  };
+
+  const handleToggleSinglePassage = (qKey: string) => {
+    const curr = isPassageIncluded(qKey);
+    setCustomPassagesMap(prev => ({ ...prev, [qKey]: !curr }));
+  };
 
   // Compute list of selected questions across all exams
   const selectedQuestions = useMemo(() => {
@@ -50,10 +89,8 @@ export const CartView: React.FC<CartViewProps> = ({
     }, 0);
   }, [selectedQuestions]);
 
-  // A4 Document HTML Builder
+  // A4 Document HTML Builder (Dynamic based on passage & answer inclusion per question)
   const buildA4HTML = () => {
-    const isTeacher = mode === 'teacher';
-
     let html = '<!DOCTYPE html><html><head><meta charset="utf-8">';
     html += '<title>' + paperTitle + '</title>';
     html += '<style>';
@@ -80,15 +117,18 @@ export const CartView: React.FC<CartViewProps> = ({
     html += '<div class="WordSection1"><div class="paper-container">';
     html += '<div class="paper-header">';
     html += '<div class="paper-title">' + paperTitle + '</div>';
-    html += '<div class="paper-info">卷面规格：A4 标准排版 | 试题总数：' + selectedQuestions.length + ' 道 | 满分：' + totalScore + ' 分 | 模式：' + (isTeacher ? '教师解析卷' : '学生自测卷') + '</div>';
+    html += '<div class="paper-info">卷面规格：A4 标准排版 | 试题总数：' + selectedQuestions.length + ' 道 | 满分：' + totalScore + ' 分</div>';
     html += '</div>';
 
     selectedQuestions.forEach((item, index) => {
-      const q = item.question;
+      const { qKey, question: q } = item;
+      const hasPassage = isPassageIncluded(qKey) && q.passage;
+      const hasAnswer = isAnswerIncluded(qKey);
+
       html += '<div class="q-card">';
       html += '<div class="q-header">第 ' + (index + 1) + ' 题 【' + item.year + ' ' + item.district + ' ' + item.examCategory + '】 (' + (q.score || 2) + '分)</div>';
 
-      if (q.passage) {
+      if (hasPassage) {
         html += '<div class="passage-box"><strong>【阅读材料】</strong><br/>' + q.passage + '</div>';
       }
 
@@ -100,7 +140,7 @@ export const CartView: React.FC<CartViewProps> = ({
         });
       }
 
-      if (isTeacher) {
+      if (hasAnswer) {
         html += '<div class="answer-card">';
         html += '<div class="ans-title">🎯 【参考答案】</div>';
         html += '<div class="ans-content">' + q.answer + '</div>';
@@ -108,7 +148,6 @@ export const CartView: React.FC<CartViewProps> = ({
         html += '<div class="ans-content">' + q.analysis + '</div>';
         html += '</div>';
       } else {
-        // Student mode blank answer area for non-choice questions
         if (!q.options || q.options.length === 0) {
           html += '<div class="blank-line"></div>';
         }
@@ -163,7 +202,7 @@ export const CartView: React.FC<CartViewProps> = ({
             🛒 已选试题汇总与 A4 标准排版一键组卷
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '1rem', maxWidth: '800px' }}>
-            汇集您在“7大考点分项”与“试卷大盘”中勾选的所有试题，支持单项移除、自定义试卷标题，导出标准 A4 规格 Word 或 PDF！
+            汇集您在“7大考点分项”与“试卷大盘”中勾选的所有试题，支持全局与单题灵活控制【答案/解析】与【背景材料】，一键导出 A4 规格 Word 或 PDF！
           </p>
         </div>
       </div>
@@ -203,22 +242,54 @@ export const CartView: React.FC<CartViewProps> = ({
               />
             </div>
 
-            <div className="filter-row" style={{ marginTop: '0.75rem', marginBottom: 0, justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="filter-chips">
-                <button
-                  className={`chip-btn ${mode === 'student' ? 'active' : ''}`}
-                  onClick={() => setMode('student')}
-                  style={{ padding: '0.5rem 1rem' }}
+            {/* Global Checkbox Matrix */}
+            <div className="filter-row" style={{ marginTop: '0.75rem', marginBottom: 0, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                <span style={{ fontWeight: 600, color: '#475569', fontSize: '0.9rem' }}>全局包含内容:</span>
+
+                <label
+                  onClick={handleToggleGlobalPassages}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    color: globalIncludePassages ? '#0284c7' : '#64748b',
+                    background: globalIncludePassages ? '#e0f2fe' : '#f8fafc',
+                    padding: '0.35rem 0.85rem',
+                    borderRadius: '20px',
+                    border: `1px solid ${globalIncludePassages ? '#0284c7' : '#cbd5e1'}`,
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  🎓 学生卷 (隐藏答案与解析)
-                </button>
-                <button
-                  className={`chip-btn ${mode === 'teacher' ? 'active' : ''}`}
-                  onClick={() => setMode('teacher')}
-                  style={{ padding: '0.5rem 1rem' }}
+                  {globalIncludePassages ? <CheckSquare className="w-4 h-4 text-sky-600" /> : <Square className="w-4 h-4 text-slate-400" />}
+                  <span>背景材料 / 阅读原文</span>
+                </label>
+
+                <label
+                  onClick={handleToggleGlobalAnswers}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    color: globalIncludeAnswers ? '#059669' : '#64748b',
+                    background: globalIncludeAnswers ? '#d1fae5' : '#f8fafc',
+                    padding: '0.35rem 0.85rem',
+                    borderRadius: '20px',
+                    border: `1px solid ${globalIncludeAnswers ? '#10b981' : '#cbd5e1'}`,
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  👨‍🏫 教师解析卷 (全显参考答案)
-                </button>
+                  {globalIncludeAnswers ? <CheckSquare className="w-4 h-4 text-emerald-600" /> : <Square className="w-4 h-4 text-slate-400" />}
+                  <span>答案 / 详细解析</span>
+                </label>
               </div>
 
               <button
@@ -266,6 +337,8 @@ export const CartView: React.FC<CartViewProps> = ({
           <div className="questions-stream">
             {selectedQuestions.map((item, idx) => {
               const { qKey, examCategory, year, district, question: q } = item;
+              const hasPassage = isPassageIncluded(qKey) && q.passage;
+              const hasAnswer = isAnswerIncluded(qKey);
 
               return (
                 <div
@@ -278,8 +351,9 @@ export const CartView: React.FC<CartViewProps> = ({
                     position: 'relative'
                   }}
                 >
-                  {/* Card Header with Remove Button */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.65rem', borderBottom: '1px solid #f1f5f9' }}>
+                  {/* Card Header with Badges, Per-Question Checkboxes (Red Circles), and Remove Button */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem', paddingBottom: '0.65rem', borderBottom: '1px solid #f1f5f9' }}>
+                    {/* Left Badges */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                       <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0f172a' }}>
                         第 {idx + 1} 题
@@ -290,23 +364,75 @@ export const CartView: React.FC<CartViewProps> = ({
                       <span className="badge badge-real" style={{ background: '#ecfdf5', color: '#047857' }}>{q.score || 2}分</span>
                     </div>
 
-                    <button
-                      className="action-btn"
-                      onClick={() => onToggleSelectQ(qKey)}
-                      style={{ color: '#ef4444', padding: '0.2rem 0.6rem', fontSize: '0.8rem', border: '1px solid #fca5a5' }}
-                      title="从下载总览中移除此题"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> 移除单题
-                    </button>
+                    {/* Right Controls: Single-Item Micro Checkboxes & Remove Button */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                      {/* Checkbox 1: Background Passage */}
+                      <label
+                        onClick={() => handleToggleSinglePassage(qKey)}
+                        title="点击单独开启/关闭此题的背景材料"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          cursor: 'pointer',
+                          userSelect: 'none',
+                          fontSize: '0.82rem',
+                          fontWeight: 600,
+                          color: hasPassage ? '#0284c7' : '#94a3b8',
+                          background: hasPassage ? '#f0f9ff' : '#f8fafc',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '12px',
+                          border: `1px solid ${hasPassage ? '#bae6fd' : '#e2e8f0'}`,
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {hasPassage ? <CheckSquare className="w-3.5 h-3.5 text-sky-600" /> : <Square className="w-3.5 h-3.5 text-slate-300" />}
+                        <span>背景材料</span>
+                      </label>
+
+                      {/* Checkbox 2: Answer & Analysis */}
+                      <label
+                        onClick={() => handleToggleSingleAnswer(qKey)}
+                        title="点击单独开启/关闭此题的答案与解析"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          cursor: 'pointer',
+                          userSelect: 'none',
+                          fontSize: '0.82rem',
+                          fontWeight: 600,
+                          color: hasAnswer ? '#059669' : '#94a3b8',
+                          background: hasAnswer ? '#ecfdf5' : '#f8fafc',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '12px',
+                          border: `1px solid ${hasAnswer ? '#a7f3d0' : '#e2e8f0'}`,
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {hasAnswer ? <CheckSquare className="w-3.5 h-3.5 text-emerald-600" /> : <Square className="w-3.5 h-3.5 text-slate-300" />}
+                        <span>答案/解析</span>
+                      </label>
+
+                      {/* Remove Button */}
+                      <button
+                        className="action-btn"
+                        onClick={() => onToggleSelectQ(qKey)}
+                        style={{ color: '#ef4444', padding: '0.2rem 0.6rem', fontSize: '0.8rem', border: '1px solid #fca5a5' }}
+                        title="从下载总览中移除此题"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> 移除单题
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Passage Box */}
-                  {q.passage && (
+                  {/* Passage Box (Rendered only if hasPassage is true) */}
+                  {hasPassage && (
                     <div className="passage-box" style={{ background: '#f8fafc', borderLeft: '4px solid #0284c7', padding: '1rem', borderRadius: '6px', marginBottom: '1rem' }}>
                       <div style={{ fontWeight: 700, color: '#0284c7', fontSize: '0.9rem', marginBottom: '0.5rem' }}>📖 【阅读语段 / 背景材料】</div>
                       <div
                         style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '2.2', whiteSpace: 'pre-wrap' }}
-                        dangerouslySetInnerHTML={{ __html: q.passage }}
+                        dangerouslySetInnerHTML={{ __html: q.passage || '' }}
                       />
                     </div>
                   )}
@@ -339,8 +465,8 @@ export const CartView: React.FC<CartViewProps> = ({
                     </div>
                   )}
 
-                  {/* Answer Box (If mode === 'teacher') */}
-                  {mode === 'teacher' && (
+                  {/* Answer Box (Rendered only if hasAnswer is true) */}
+                  {hasAnswer && (
                     <div className="answer-box" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '1rem', marginTop: '1rem' }}>
                       <div style={{ fontWeight: 700, color: '#166534', fontSize: '0.9rem', marginBottom: '0.4rem' }}>🎯 【参考答案】</div>
                       <div style={{ color: '#14532d', fontSize: '0.95rem', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: q.answer }} />
