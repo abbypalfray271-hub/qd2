@@ -139,8 +139,32 @@ export function App() {
     setSelectedQKeys(new Set());
   };
   const [selectedCategory, setSelectedCategory] = useState<string>('全部');
-  const [selectedYear, setSelectedYear] = useState<string>('全部');
-  const [selectedDistrict, setSelectedDistrict] = useState<string>('全部');
+  const [selectedYears, setSelectedYears] = useState<Set<string>>(new Set(['全部']));
+  const [selectedDistricts, setSelectedDistricts] = useState<Set<string>>(new Set(['全部']));
+
+  const handleToggleYearFilter = (yr: string) => {
+    setSelectedYears(prev => {
+      const next = new Set(prev);
+      if (yr === '全部') return new Set(['全部']);
+      next.delete('全部');
+      if (next.has(yr)) next.delete(yr);
+      else next.add(yr);
+      if (next.size === 0) next.add('全部');
+      return next;
+    });
+  };
+
+  const handleToggleDistrictFilter = (dis: string) => {
+    setSelectedDistricts(prev => {
+      const next = new Set(prev);
+      if (dis === '全部') return new Set(['全部']);
+      next.delete('全部');
+      if (next.has(dis)) next.delete(dis);
+      else next.add(dis);
+      if (next.size === 0) next.add('全部');
+      return next;
+    });
+  };
   const [searchQuery, setSearchQuery] = useState<string>('');
   
   // Single Exam Viewer Modal State
@@ -186,8 +210,8 @@ export function App() {
   const filteredExams = useMemo(() => {
     return examsData.filter(exam => {
       if (selectedCategory !== '全部' && exam.category !== selectedCategory) return false;
-      if (selectedYear !== '全部' && exam.year !== selectedYear) return false;
-      if (selectedDistrict !== '全部' && exam.district !== selectedDistrict) return false;
+      if (!selectedYears.has('全部') && !selectedYears.has(exam.year)) return false;
+      if (!selectedDistricts.has('全部') && !selectedDistricts.has(exam.district)) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matchTitle = exam.title.toLowerCase().includes(q);
@@ -196,7 +220,7 @@ export function App() {
       }
       return true;
     });
-  }, [examsData, selectedCategory, selectedYear, selectedDistrict, searchQuery]);
+  }, [examsData, selectedCategory, selectedYears, selectedDistricts, searchQuery]);
 
 // handlePrint function removed for CartView
 
@@ -322,8 +346,8 @@ export function App() {
                   {years.map(yr => (
                     <button 
                       key={yr} 
-                      className={`chip-btn ${selectedYear === yr ? 'active' : ''}`}
-                      onClick={() => setSelectedYear(yr)}
+                      className={`chip-btn ${selectedYears.has(yr) ? 'active' : ''}`}
+                      onClick={() => handleToggleYearFilter(yr)}
                     >
                       {yr}
                     </button>
@@ -337,8 +361,8 @@ export function App() {
                   {districts.map(dist => (
                     <button 
                       key={dist} 
-                      className={`chip-btn ${selectedDistrict === dist ? 'active' : ''}`}
-                      onClick={() => setSelectedDistrict(dist)}
+                      className={`chip-btn ${selectedDistricts.has(dist) ? 'active' : ''}`}
+                      onClick={() => handleToggleDistrictFilter(dist)}
                     >
                       {dist}
                     </button>

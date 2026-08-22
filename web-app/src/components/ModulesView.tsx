@@ -25,8 +25,46 @@ export const MODULE_CATEGORIES = [
 export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKeys: externalQKeys, onToggleSelectQ: externalToggleQ, onSelectBatch, onClearAll, onNavigateToCart }) => {
   const [selectedModule, setSelectedModule] = useState<string>('base');
   const [sourceFilter, setSourceFilter] = useState<'all' | '正式真题' | '区县模拟'>('正式真题');
-  const [yearFilter, setYearFilter] = useState<string>('全部');
-  const [districtFilter, setDistrictFilter] = useState<string>('全部');
+  const [selectedYears, setSelectedYears] = useState<Set<string>>(new Set(['全部']));
+  const [selectedDistricts, setSelectedDistricts] = useState<Set<string>>(new Set(['全部']));
+
+  const handleToggleYearFilter = (yr: string) => {
+    setSelectedYears(prev => {
+      const next = new Set(prev);
+      if (yr === '全部') {
+        return new Set(['全部']);
+      }
+      next.delete('全部');
+      if (next.has(yr)) {
+        next.delete(yr);
+      } else {
+        next.add(yr);
+      }
+      if (next.size === 0) {
+        next.add('全部');
+      }
+      return next;
+    });
+  };
+
+  const handleToggleDistrictFilter = (dis: string) => {
+    setSelectedDistricts(prev => {
+      const next = new Set(prev);
+      if (dis === '全部') {
+        return new Set(['全部']);
+      }
+      next.delete('全部');
+      if (next.has(dis)) {
+        next.delete(dis);
+      } else {
+        next.add(dis);
+      }
+      if (next.size === 0) {
+        next.add('全部');
+      }
+      return next;
+    });
+  };
   const [searchQuery, setSearchQuery] = useState<string>('');
   
   // View mode: 'student' (极简自测) | 'teacher' (教研全显)
@@ -62,8 +100,8 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
 
     examsData.forEach((exam) => {
       if (sourceFilter !== 'all' && exam.category !== sourceFilter) return;
-      if (yearFilter !== '全部' && exam.year !== yearFilter) return;
-      if (districtFilter !== '全部' && exam.district !== districtFilter) return;
+      if (!selectedYears.has('全部') && !selectedYears.has(exam.year)) return;
+      if (!selectedDistricts.has('全部') && !selectedDistricts.has(exam.district)) return;
 
       exam.questions.forEach((q, qIdx) => {
         const qKey = `${exam.id}_q${qIdx}`;
@@ -110,7 +148,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
     });
 
     return list;
-  }, [examsData, selectedModule, sourceFilter, yearFilter, districtFilter, searchQuery]);
+  }, [examsData, selectedModule, sourceFilter, selectedYears, selectedDistricts, searchQuery]);
 
   // Dynamic check if all current visible questions are selected
   const isAllCurrentSelected = useMemo(() => {
@@ -234,8 +272,8 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
             {years.map(yr => (
               <button
                 key={yr}
-                className={`chip-btn ${yearFilter === yr ? 'active' : ''}`}
-                onClick={() => setYearFilter(yr)}
+                className={`chip-btn ${selectedYears.has(yr) ? 'active' : ''}`}
+                onClick={() => handleToggleYearFilter(yr)}
               >
                 {yr}
               </button>
@@ -250,8 +288,8 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
             {districts.map(dist => (
               <button
                 key={dist}
-                className={`chip-btn ${districtFilter === dist ? 'active' : ''}`}
-                onClick={() => setDistrictFilter(dist)}
+                className={`chip-btn ${selectedDistricts.has(dist) ? 'active' : ''}`}
+                onClick={() => handleToggleDistrictFilter(dist)}
               >
                 {dist}
               </button>
