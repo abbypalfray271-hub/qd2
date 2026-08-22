@@ -104,7 +104,7 @@ export const CartView: React.FC<CartViewProps> = ({
     html += '.paper-header { text-align: center; margin-bottom: 25px; border-bottom: 2pt solid #0284c7; padding-bottom: 12px; }';
     html += '.paper-title { font-size: 18pt; font-weight: bold; color: #0f172a; margin-bottom: 8px; }';
     html += '.paper-info { font-size: 10.5pt; color: #64748b; }';
-    html += '.q-card { margin-bottom: 22pt; page-break-inside: avoid; border-bottom: 1px dashed #e2e8f0; padding-bottom: 15pt; }';
+    html += '.q-card { margin-bottom: 20pt; border-bottom: 1px dashed #e2e8f0; padding-bottom: 15pt; page-break-inside: auto; }';
     html += '.q-header { font-weight: bold; font-size: 11pt; color: #0369a1; margin-bottom: 8pt; }';
     html += '.passage-box { background: #f8fafc; border-left: 3.5pt solid #0284c7; padding: 10pt 12pt; margin-bottom: 12pt; font-size: 10.5pt; line-height: 2.2; white-space: pre-wrap; }';
     html += '.stem { font-size: 11pt; font-weight: bold; margin-bottom: 8pt; color: #0f172a; line-height: 1.6; }';
@@ -190,7 +190,8 @@ export const CartView: React.FC<CartViewProps> = ({
       filename:     `${paperTitle}_A4标准排版.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, logging: false },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'] }
     };
 
     try {
