@@ -99,7 +99,9 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
     const list: { qKey: string; examCategory: string; year: string; district: string; question: Question }[] = [];
 
     examsData.forEach((exam) => {
-      if (sourceFilter !== 'all' && exam.category !== sourceFilter) return;
+      const isSpecificDistrictSelected = !selectedDistricts.has('全部') && !selectedDistricts.has('青岛市级');
+      const matchSource = sourceFilter === 'all' || exam.category === sourceFilter || isSpecificDistrictSelected;
+      if (!matchSource) return;
       if (!selectedYears.has('全部') && !selectedYears.has(exam.year)) return;
       if (!selectedDistricts.has('全部') && !selectedDistricts.has(exam.district)) return;
 
@@ -109,20 +111,22 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
         const grpT = q.group_title || '';
         const stem = q.stem || '';
 
-        // Determine bucket module
+        // Determine bucket module (Writing priority #1)
         let modKey = 'base';
-        if (grpT.includes('名著') || stem.includes('名著') || stem.includes('《钢铁是怎样炼成的》') || stem.includes('《骆驼祥子》') || stem.includes('《名人传》') || stem.includes('《昆虫记》')) {
-          modKey = 'classics';
-        } else if (grpT.includes('诗') || stem.includes('诗歌') || stem.includes('《诗经》') || stem.includes('古诗') || stem.includes('对诗歌理解')) {
+        if (secT.includes('写作') || grpT.includes('写作') || qIdx === exam.questions.length - 1) {
+          modKey = 'writing';
+        } else if (secT.includes('基础') || secT.includes('积累') || grpT.includes('基础') || grpT.includes('积累')) {
+          modKey = 'base';
+        } else if (grpT.includes('诗') || secT.includes('诗') || stem.includes('《诗经》') || stem.includes('古诗')) {
           modKey = 'poetry';
-        } else if (grpT.includes('文言文') || stem.includes('加点词的解释') || stem.includes('翻译成现代汉语') || stem.includes('句式相同')) {
+        } else if (grpT.includes('名著') || secT.includes('名著') || stem.includes('名著') || stem.includes('《钢铁是怎样炼成的》') || stem.includes('《骆驼祥子》') || stem.includes('《名人传》') || stem.includes('《昆虫记》')) {
+          modKey = 'classics';
+        } else if (grpT.includes('文言文') || secT.includes('文言文') || stem.includes('加点词的解释') || stem.includes('翻译成现代汉语') || stem.includes('句式相同')) {
           modKey = 'wenyan';
         } else if (grpT.includes('现代文阅读Ⅰ') || grpT.includes('说明文') || grpT.includes('议论文') || grpT.includes('非遗')) {
           modKey = 'modern1';
         } else if (grpT.includes('现代文阅读Ⅱ') || grpT.includes('散文') || grpT.includes('记叙文') || grpT.includes('小说')) {
           modKey = 'modern2';
-        } else if (grpT.includes('写作') || secT.includes('写作') || qIdx === exam.questions.length - 1) {
-          modKey = 'writing';
         } else {
           modKey = 'base';
         }
