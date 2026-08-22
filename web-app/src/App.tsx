@@ -142,6 +142,20 @@ export function App() {
   const [selectedYears, setSelectedYears] = useState<Set<string>>(new Set(['全部']));
   const [selectedDistricts, setSelectedDistricts] = useState<Set<string>>(new Set(['全部']));
 
+  const handleSelectSourceFilter = (source: string) => {
+    setSelectedCategory(source);
+    if (source === '正式真题') {
+      setSelectedDistricts(new Set(['青岛市级']));
+    } else if (source === '区县模拟') {
+      setSelectedDistricts(prev => {
+        const next = new Set(prev);
+        next.delete('青岛市级');
+        if (next.size === 0 || next.has('全部')) return new Set(['市南区']);
+        return next;
+      });
+    }
+  };
+
   const handleToggleYearFilter = (yr: string) => {
     setSelectedYears(prev => {
       const next = new Set(prev);
@@ -211,7 +225,12 @@ export function App() {
     return examsData.filter(exam => {
       if (selectedCategory !== '全部' && exam.category !== selectedCategory) return false;
       if (!selectedYears.has('全部') && !selectedYears.has(exam.year)) return false;
-      if (!selectedDistricts.has('全部') && !selectedDistricts.has(exam.district)) return false;
+
+      if (selectedCategory === '正式真题') {
+        if (exam.district !== '青岛市级') return false;
+      } else {
+        if (!selectedDistricts.has('全部') && !selectedDistricts.has(exam.district)) return false;
+      }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matchTitle = exam.title.toLowerCase().includes(q);
@@ -332,7 +351,7 @@ export function App() {
                     <button 
                       key={cat} 
                       className={`chip-btn ${selectedCategory === cat ? 'active' : ''}`}
-                      onClick={() => setSelectedCategory(cat)}
+                      onClick={() => handleSelectSourceFilter(cat)}
                     >
                       {cat}
                     </button>
@@ -355,18 +374,43 @@ export function App() {
                 </div>
               </div>
 
-              <div className="filter-row">
+              {/* District Filter (With Smart Source Linkage & Disable State) */}
+              <div className="filter-row" style={{ opacity: selectedCategory === '正式真题' ? 0.55 : 1, transition: 'opacity 0.2s ease' }}>
                 <div className="filter-label">所属区县:</div>
                 <div className="filter-chips">
-                  {districts.map(dist => (
-                    <button 
-                      key={dist} 
-                      className={`chip-btn ${selectedDistricts.has(dist) ? 'active' : ''}`}
-                      onClick={() => handleToggleDistrictFilter(dist)}
-                    >
-                      {dist}
-                    </button>
-                  ))}
+                  {districts.map(dist => {
+                    const isRealOnly = selectedCategory === '正式真题';
+                    const isMockOnly = selectedCategory === '区县模拟';
+
+                    let isDisabled = false;
+                    let tooltipText = '';
+
+                    if (isRealOnly && dist !== '青岛市级') {
+                      isDisabled = true;
+                      tooltipText = '正式真题为全市统一命题，无需筛选区县';
+                    } else if (isMockOnly && dist === '青岛市级') {
+                      isDisabled = true;
+                      tooltipText = '青岛市级专属于中考正式真题';
+                    }
+
+                    const isActive = isRealOnly ? dist === '青岛市级' : selectedDistricts.has(dist);
+
+                    return (
+                      <button 
+                        key={dist}
+                        disabled={isDisabled}
+                        title={tooltipText}
+                        className={`chip-btn ${isActive ? 'active' : ''}`}
+                        onClick={() => !isDisabled && handleToggleDistrictFilter(dist)}
+                        style={{
+                          cursor: isDisabled ? 'not-allowed' : 'pointer',
+                          opacity: isDisabled ? 0.45 : 1
+                        }}
+                      >
+                        {dist}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

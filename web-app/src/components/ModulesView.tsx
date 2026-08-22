@@ -28,6 +28,20 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
   const [selectedYears, setSelectedYears] = useState<Set<string>>(new Set(['全部']));
   const [selectedDistricts, setSelectedDistricts] = useState<Set<string>>(new Set(['全部']));
 
+  const handleSelectSourceFilter = (source: '正式真题' | '区县模拟' | 'all') => {
+    setSourceFilter(source);
+    if (source === '正式真题') {
+      setSelectedDistricts(new Set(['青岛市级']));
+    } else if (source === '区县模拟') {
+      setSelectedDistricts(prev => {
+        const next = new Set(prev);
+        next.delete('青岛市级');
+        if (next.size === 0 || next.has('全部')) return new Set(['市南区']);
+        return next;
+      });
+    }
+  };
+
   const handleToggleYearFilter = (yr: string) => {
     setSelectedYears(prev => {
       const next = new Set(prev);
@@ -250,19 +264,19 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
           <div className="filter-chips">
             <button
               className={`chip-btn ${sourceFilter === '正式真题' ? 'active' : ''}`}
-              onClick={() => setSourceFilter('正式真题')}
+              onClick={() => handleSelectSourceFilter('正式真题')}
             >
               🏆 青岛正式真题库 (2018–2025年)
             </button>
             <button
               className={`chip-btn ${sourceFilter === '区县模拟' ? 'active' : ''}`}
-              onClick={() => setSourceFilter('区县模拟')}
+              onClick={() => handleSelectSourceFilter('区县模拟')}
             >
               🏫 青岛区县模拟题库 (35套一模二模)
             </button>
             <button
               className={`chip-btn ${sourceFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setSourceFilter('all')}
+              onClick={() => handleSelectSourceFilter('all')}
             >
               🌐 全部合并题库
             </button>
@@ -285,19 +299,43 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
           </div>
         </div>
 
-        {/* District Filter */}
-        <div className="filter-row">
+        {/* District Filter (With Smart Source Linkage & Disable State) */}
+        <div className="filter-row" style={{ opacity: sourceFilter === '正式真题' ? 0.55 : 1, transition: 'opacity 0.2s ease' }}>
           <div className="filter-label">区县筛选:</div>
           <div className="filter-chips">
-            {districts.map(dist => (
-              <button
-                key={dist}
-                className={`chip-btn ${selectedDistricts.has(dist) ? 'active' : ''}`}
-                onClick={() => handleToggleDistrictFilter(dist)}
-              >
-                {dist}
-              </button>
-            ))}
+            {districts.map(dist => {
+              const isRealOnly = sourceFilter === '正式真题';
+              const isMockOnly = sourceFilter === '区县模拟';
+
+              let isDisabled = false;
+              let tooltipText = '';
+
+              if (isRealOnly && dist !== '青岛市级') {
+                isDisabled = true;
+                tooltipText = '正式真题为全市统一命题，无需筛选区县';
+              } else if (isMockOnly && dist === '青岛市级') {
+                isDisabled = true;
+                tooltipText = '青岛市级专属于中考正式真题';
+              }
+
+              const isActive = isRealOnly ? dist === '青岛市级' : selectedDistricts.has(dist);
+
+              return (
+                <button
+                  key={dist}
+                  disabled={isDisabled}
+                  title={tooltipText}
+                  className={`chip-btn ${isActive ? 'active' : ''}`}
+                  onClick={() => !isDisabled && handleToggleDistrictFilter(dist)}
+                  style={{
+                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                    opacity: isDisabled ? 0.45 : 1
+                  }}
+                >
+                  {dist}
+                </button>
+              );
+            })}
           </div>
         </div>
 
