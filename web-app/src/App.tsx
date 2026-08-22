@@ -545,7 +545,7 @@ export function App() {
 
         {/* TAB 3: Print Console */}
         {activeTab === 'modules' && (
-          <ModulesView examsData={examsData} selectedQKeys={selectedQKeys} onToggleSelectQ={handleToggleSelectQ} />
+          <ModulesView examsData={examsData} selectedQKeys={selectedQKeys} onToggleSelectQ={handleToggleSelectQ} onNavigateToCart={() => setActiveTab('cart')} />
         )}
 
         {activeTab === 'cart' && (

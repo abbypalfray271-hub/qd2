@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import type { Exam, Question } from '../types';
-import { CheckSquare, Square, FileText, FileSpreadsheet, Eye, EyeOff, Search, Sparkles, Filter, CheckCircle2, XCircle } from 'lucide-react';
+import { CheckSquare, Square, Eye, EyeOff, Search, Sparkles, Filter, CheckCircle2, XCircle, ShoppingCart, ArrowRight } from 'lucide-react';
 
 interface ModulesViewProps {
   examsData: Exam[];
   selectedQKeys?: Set<string>;
   onToggleSelectQ?: (qKey: string) => void;
+  onNavigateToCart?: () => void;
 }
 
 export const MODULE_CATEGORIES = [
@@ -19,7 +20,7 @@ export const MODULE_CATEGORIES = [
   { id: 'writing', name: '七、写作', icon: '✍️', keyword: '写作' }
 ];
 
-export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKeys: externalQKeys, onToggleSelectQ: externalToggleQ }) => {
+export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKeys: externalQKeys, onToggleSelectQ: externalToggleQ, onNavigateToCart }) => {
   const [selectedModule, setSelectedModule] = useState<string>('base');
   const [sourceFilter, setSourceFilter] = useState<'all' | '正式真题' | '区县模拟'>('正式真题');
   const [yearFilter, setYearFilter] = useState<string>('全部');
@@ -132,91 +133,6 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
 
   const toggleExpandAnswer = (qKey: string) => {
     setExpandedAnswers(prev => ({ ...prev, [qKey]: !prev[qKey] }));
-  };
-
-  // Export HTML Generator
-  const generateExportHTML = (items: typeof categorizedQuestions) => {
-    const targetItems = items.length > 0 ? items : categorizedQuestions;
-    const modTitle = MODULE_CATEGORIES.find(m => m.id === selectedModule)?.name || '青岛中考语文专项';
-    
-    let html = '<!DOCTYPE html><html><head><meta charset="utf-8">';
-    html += '<title>' + modTitle + ' - 专项试题汇编</title>';
-    html += '<style>body { font-family: SimSun, serif; line-height: 1.6; padding: 40px; color: #1e293b; background: #fff; } h1 { text-align: center; color: #0f172a; margin-bottom: 5px; } .subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 30px; border-bottom: 2px solid #0284c7; padding-bottom: 10px; } .card { margin-bottom: 30px; padding: 20px; border: 1px solid #cbd5e1; border-radius: 8px; page-break-inside: avoid; background: #fff; } .card-header { font-weight: bold; color: #0369a1; font-size: 15px; margin-bottom: 10px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 6px; } .passage { background: #f8fafc; padding: 12px; border-left: 4px solid #0284c7; margin-bottom: 15px; font-size: 14px; white-space: pre-wrap; } .stem { font-size: 15px; font-weight: bold; margin-bottom: 10px; } .option { margin-left: 20px; font-size: 14px; margin-bottom: 4px; } .answer-box { margin-top: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 15px; border-radius: 6px; } .answer-title { font-weight: bold; color: #166534; } .dot-emphasis { border-bottom: 2px dotted #0284c7; padding-bottom: 1px; font-weight: bold; }</style></head><body>';
-    html += '<h1>🏆 青岛中考语文专项试题汇编</h1>';
-    html += '<div class="subtitle">分类模块：' + modTitle + ' | 包含题目：' + targetItems.length + ' 道 | 数据库出处：青岛市中考语文云平台</div>';
-
-    targetItems.forEach((item, index) => {
-      const q = item.question;
-      html += '<div class="card">';
-      html += '<div class="card-header">第 ' + (index + 1) + ' 题【' + item.year + ' ' + item.district + ' ' + item.examCategory + '】 (' + (q.score || 2) + '分)</div>';
-      
-      if (q.passage) {
-        html += '<div class="passage"><strong>【阅读材料】</strong><br/>' + q.passage + '</div>';
-      }
-
-      html += '<div class="stem">' + q.stem + '</div>';
-
-      if (q.options && q.options.length > 0) {
-        q.options.forEach(opt => {
-          html += '<div class="option">' + opt + '</div>';
-        });
-      }
-
-      html += '<div class="answer-box">';
-      html += '<div class="answer-title">【参考答案】</div>';
-      html += '<div>' + q.answer + '</div>';
-      html += '<div class="answer-title" style="margin-top:8px;">【详细解析】</div>';
-      html += '<div>' + q.analysis + '</div>';
-      html += '</div></div>';
-    });
-
-    html += '</body></html>';
-    return html;
-  };
-
-  // Export Word (.doc)
-  const handleExportWord = () => {
-    const selectedItems = categorizedQuestions.filter(item => selectedQKeys.has(item.qKey));
-    const itemsToExport = selectedItems.length > 0 ? selectedItems : categorizedQuestions;
-
-    if (itemsToExport.length === 0) {
-      alert("没有可导出的试题！");
-      return;
-    }
-
-    const htmlContent = generateExportHTML(itemsToExport);
-    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const modTitle = MODULE_CATEGORIES.find(m => m.id === selectedModule)?.name || '专项试题';
-    a.download = `青岛中考语文_${modTitle}_${itemsToExport.length}题.doc`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  // Export PDF (.pdf)
-  const handleExportPDF = () => {
-    const selectedItems = categorizedQuestions.filter(item => selectedQKeys.has(item.qKey));
-    const itemsToExport = selectedItems.length > 0 ? selectedItems : categorizedQuestions;
-
-    if (itemsToExport.length === 0) {
-      alert("没有可导出的试题！");
-      return;
-    }
-
-    const htmlContent = generateExportHTML(itemsToExport);
-    const printWin = window.open('', '_blank');
-    if (printWin) {
-      printWin.document.write(htmlContent);
-      printWin.document.close();
-      printWin.focus();
-      setTimeout(() => {
-        printWin.print();
-      }, 500);
-    }
   };
 
   return (
@@ -378,11 +294,12 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button className="action-btn action-btn-primary" onClick={handleExportWord} style={{ background: '#10b981', borderColor: '#10b981' }}>
-              <FileSpreadsheet className="w-4 h-4" /> 📥 导出 Word (.doc)
-            </button>
-            <button className="action-btn action-btn-primary" onClick={handleExportPDF} style={{ background: '#ef4444', borderColor: '#ef4444' }}>
-              <FileText className="w-4 h-4" /> 📄 导出 PDF (.pdf)
+            <button
+              className="action-btn action-btn-primary"
+              onClick={onNavigateToCart}
+              style={{ background: '#0284c7', borderColor: '#0284c7', padding: '0.55rem 1.25rem', fontSize: '0.9rem', fontWeight: 700 }}
+            >
+              <ShoppingCart className="w-4 h-4" /> 🛒 前往下载总览 (已选 {selectedQKeys.size} 题) <ArrowRight className="w-4 h-4 ml-1" />
             </button>
           </div>
         </div>
