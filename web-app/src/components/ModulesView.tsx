@@ -6,6 +6,8 @@ interface ModulesViewProps {
   examsData: Exam[];
   selectedQKeys?: Set<string>;
   onToggleSelectQ?: (qKey: string) => void;
+  onSelectBatch?: (qKeysToAdd: string[]) => void;
+  onClearAll?: () => void;
   onNavigateToCart?: () => void;
 }
 
@@ -20,7 +22,7 @@ export const MODULE_CATEGORIES = [
   { id: 'writing', name: '七、写作', icon: '✍️', keyword: '写作' }
 ];
 
-export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKeys: externalQKeys, onToggleSelectQ: externalToggleQ, onNavigateToCart }) => {
+export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKeys: externalQKeys, onToggleSelectQ: externalToggleQ, onSelectBatch, onClearAll, onNavigateToCart }) => {
   const [selectedModule, setSelectedModule] = useState<string>('base');
   const [sourceFilter, setSourceFilter] = useState<'all' | '正式真题' | '区县模拟'>('正式真题');
   const [yearFilter, setYearFilter] = useState<string>('全部');
@@ -113,17 +115,16 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
 // Selection Handlers handled above
 
   const handleSelectAllCurrent = () => {
-    categorizedQuestions.forEach(item => {
-      if (!selectedQKeys.has(item.qKey)) {
-        handleToggleSelectQ(item.qKey);
-      }
-    });
+    const keysToSelect = categorizedQuestions.map(item => item.qKey);
+    if (onSelectBatch) {
+      onSelectBatch(keysToSelect);
+    }
   };
 
   const handleClearSelection = () => {
-    selectedQKeys.forEach(qKey => {
-      handleToggleSelectQ(qKey);
-    });
+    if (onClearAll) {
+      onClearAll();
+    }
   };
 
   // Student mode interactive option selection

@@ -116,13 +116,27 @@ export function App() {
   const [selectedQKeys, setSelectedQKeys] = useState<Set<string>>(new Set());
 
   const handleToggleSelectQ = (qKey: string) => {
-    const next = new Set(selectedQKeys);
-    if (next.has(qKey)) {
-      next.delete(qKey);
-    } else {
-      next.add(qKey);
-    }
-    setSelectedQKeys(next);
+    setSelectedQKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(qKey)) {
+        next.delete(qKey);
+      } else {
+        next.add(qKey);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectBatch = (qKeysToAdd: string[]) => {
+    setSelectedQKeys(prev => {
+      const next = new Set(prev);
+      qKeysToAdd.forEach(k => next.add(k));
+      return next;
+    });
+  };
+
+  const handleClearAll = () => {
+    setSelectedQKeys(new Set());
   };
   const [selectedCategory, setSelectedCategory] = useState<string>('全部');
   const [selectedYear, setSelectedYear] = useState<string>('全部');
@@ -545,7 +559,7 @@ export function App() {
 
         {/* TAB 3: Print Console */}
         {activeTab === 'modules' && (
-          <ModulesView examsData={examsData} selectedQKeys={selectedQKeys} onToggleSelectQ={handleToggleSelectQ} onNavigateToCart={() => setActiveTab('cart')} />
+          <ModulesView examsData={examsData} selectedQKeys={selectedQKeys} onToggleSelectQ={handleToggleSelectQ} onSelectBatch={handleSelectBatch} onClearAll={handleClearAll} onNavigateToCart={() => setActiveTab('cart')} />
         )}
 
         {activeTab === 'cart' && (
