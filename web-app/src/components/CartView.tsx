@@ -1,3 +1,5 @@
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 import React, { useState, useMemo } from 'react';
 import type { Exam, Question } from '../types';
 import { ShoppingCart, FileText, FileSpreadsheet, Trash2, ArrowRight, CheckSquare, Square } from 'lucide-react';
@@ -175,18 +177,27 @@ export const CartView: React.FC<CartViewProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  // Export A4 PDF via System Print Window
+  // Export A4 PDF directly via html2pdf.js (Zero print window popup, pure direct file download)
   const handleExportA4PDF = () => {
     if (selectedQuestions.length === 0) return;
     const htmlContent = buildA4HTML();
-    const printWin = window.open('', '_blank');
-    if (printWin) {
-      printWin.document.write(htmlContent);
-      printWin.document.close();
-      printWin.focus();
-      setTimeout(() => {
-        printWin.print();
-      }, 500);
+
+    const element = document.createElement('div');
+    element.innerHTML = htmlContent;
+
+    const opt = {
+      margin:       [12, 12, 12, 12],
+      filename:     `${paperTitle}_A4标准排版.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      // @ts-ignore
+      html2pdf().set(opt).from(element).save();
+    } catch (e) {
+      console.error("PDF export failed:", e);
     }
   };
 

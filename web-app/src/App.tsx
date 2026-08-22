@@ -307,8 +307,13 @@ export function App() {
             <button 
               className={`nav-btn ${activeTab === 'cart' ? 'active' : ''}`}
               onClick={() => setActiveTab('cart')}
+              style={{ position: 'relative' }}
             >
-              <ShoppingCart className="w-4 h-4" /> 一键免排版打印
+              <ShoppingCart className="w-4 h-4" />
+              <span>下载总览</span>
+              {selectedQKeys.size > 0 && (
+                <span className="cart-badge">{selectedQKeys.size}</span>
+              )}
             </button>
             <button 
               className={`nav-btn ${activeTab === 'admin' ? 'active' : ''}`}
