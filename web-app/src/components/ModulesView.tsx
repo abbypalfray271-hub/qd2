@@ -112,12 +112,30 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
     return list;
   }, [examsData, selectedModule, sourceFilter, yearFilter, districtFilter, searchQuery]);
 
+  // Dynamic check if all current visible questions are selected
+  const isAllCurrentSelected = useMemo(() => {
+    if (!categorizedQuestions || categorizedQuestions.length === 0) return false;
+    return categorizedQuestions.every(item => selectedQKeys.has(item.qKey));
+  }, [categorizedQuestions, selectedQKeys]);
+
 // Selection Handlers handled above
 
   const handleSelectAllCurrent = () => {
     const keysToSelect = categorizedQuestions.map(item => item.qKey);
-    if (onSelectBatch) {
-      onSelectBatch(keysToSelect);
+    if (isAllCurrentSelected) {
+      // Toggle OFF: deselect all questions on current page
+      if (externalToggleQ) {
+        keysToSelect.forEach(qKey => {
+          if (selectedQKeys.has(qKey)) {
+            externalToggleQ(qKey);
+          }
+        });
+      }
+    } else {
+      // Toggle ON: select all questions on current page
+      if (onSelectBatch) {
+        onSelectBatch(keysToSelect);
+      }
     }
   };
 
@@ -281,8 +299,22 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
       <div className="filter-card no-print" style={{ padding: '1rem 1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button className="action-btn" onClick={handleSelectAllCurrent}>
-              <CheckSquare className="w-4 h-4 text-sky-600" /> 全选本页 ({categorizedQuestions.length}题)
+            <button
+              className="action-btn"
+              onClick={handleSelectAllCurrent}
+              style={{
+                background: isAllCurrentSelected ? '#e0f2fe' : '#f8fafc',
+                borderColor: isAllCurrentSelected ? '#0284c7' : '#cbd5e1',
+                color: isAllCurrentSelected ? '#0284c7' : '#475569',
+                fontWeight: 600
+              }}
+            >
+              {isAllCurrentSelected ? (
+                <CheckSquare className="w-4 h-4 text-sky-600" />
+              ) : (
+                <Square className="w-4 h-4 text-slate-400" />
+              )}
+              <span>全选本页 ({categorizedQuestions.length}题)</span>
             </button>
             {selectedQKeys.size > 0 && (
               <button className="action-btn" onClick={handleClearSelection} style={{ color: '#ef4444' }}>
