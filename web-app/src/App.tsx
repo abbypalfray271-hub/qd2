@@ -16,7 +16,8 @@ import {
   Loader2,
   AlertTriangle,
   Bookmark,
-  Eye
+  Eye,
+  CheckSquare
 } from 'lucide-react';
 import type { Exam, ActiveTab } from './types';
 
@@ -154,6 +155,28 @@ export function App() {
         return next;
       });
     }
+  };
+
+  // Helper to check if all questions of an exam are in selectedQKeys
+  const isExamFullyInCart = (exam: Exam) => {
+    if (!exam.questions || exam.questions.length === 0) return false;
+    return exam.questions.every((_: any, idx: number) => selectedQKeys.has(`${exam.id}_q${idx + 1}`));
+  };
+
+  const handleToggleExamInCart = (exam: Exam) => {
+    const isAllSelected = isExamFullyInCart(exam);
+    setSelectedQKeys(prev => {
+      const next = new Set(prev);
+      exam.questions.forEach((_: any, idx: number) => {
+        const key = `${exam.id}_q${idx + 1}`;
+        if (isAllSelected) {
+          next.delete(key);
+        } else {
+          next.add(key);
+        }
+      });
+      return next;
+    });
   };
 
   const handleToggleYearFilter = (yr: string) => {
@@ -461,21 +484,50 @@ export function App() {
                     </div>
                   </div>
 
-                  <div className="exam-actions">
+                  <div className="exam-actions" style={{ display: 'flex', gap: '0.4rem', marginTop: '1rem', flexWrap: 'wrap' }}>
                     <button 
                       className="action-btn action-btn-primary"
                       onClick={() => setViewingExam(exam)}
+                      style={{ padding: '0.45rem 0.65rem', fontSize: '0.85rem' }}
                     >
                       <Eye className="w-4 h-4" /> 查看全卷
                     </button>
+
+                    {/* 勾选项 1: 下载 */}
                     <button 
-                      className="action-btn"
+                      className={`action-btn ${isExamFullyInCart(exam) ? 'active-cart-btn' : ''}`}
+                      onClick={() => handleToggleExamInCart(exam)}
+                      style={{
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.85rem',
+                        background: isExamFullyInCart(exam) ? '#ecfdf5' : '#ffffff',
+                        color: isExamFullyInCart(exam) ? '#047857' : '#334155',
+                        borderColor: isExamFullyInCart(exam) ? '#10b981' : '#cbd5e1',
+                        fontWeight: isExamFullyInCart(exam) ? 600 : 400
+                      }}
+                    >
+                      <CheckSquare className="w-4 h-4" style={{ color: isExamFullyInCart(exam) ? '#10b981' : '#64748b' }} />
+                      {isExamFullyInCart(exam) ? '✓ 1. 已选入下载' : '1. 下载'}
+                    </button>
+
+                    {/* 勾选项 2: 同屏对比 */}
+                    <button 
+                      className={`action-btn ${(leftExam?.id === exam.id || rightExam?.id === exam.id) ? 'active-compare-btn' : ''}`}
                       onClick={() => {
                         setLeftExam(exam);
                         setActiveTab('compare');
                       }}
+                      style={{
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.85rem',
+                        background: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? '#f0f9ff' : '#ffffff',
+                        color: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? '#0369a1' : '#334155',
+                        borderColor: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? '#0284c7' : '#cbd5e1',
+                        fontWeight: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? 600 : 400
+                      }}
                     >
-                      <Columns className="w-4 h-4" /> 同屏对比
+                      <Columns className="w-4 h-4" style={{ color: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? '#0284c7' : '#64748b' }} />
+                      {(leftExam?.id === exam.id || rightExam?.id === exam.id) ? '✓ 2. 对比中' : '2. 同屏对比'}
                     </button>
                   </div>
                 </div>
