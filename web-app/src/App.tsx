@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   Bookmark,
   Eye,
-  CheckSquare
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import type { Exam, ActiveTab } from './types';
 
@@ -158,6 +159,24 @@ export function App() {
   };
 
   // Helper to check if all questions of an exam are in selectedQKeys
+  // Silent Compare Toggle (Zero page jump!)
+  const handleToggleCompareExam = (exam: Exam) => {
+    if (leftExam?.id === exam.id) {
+      setLeftExam(rightExam);
+      setRightExam(null);
+    } else if (rightExam?.id === exam.id) {
+      setRightExam(null);
+    } else {
+      if (!leftExam) {
+        setLeftExam(exam);
+      } else if (!rightExam) {
+        setRightExam(exam);
+      } else {
+        setRightExam(exam);
+      }
+    }
+  };
+
   const isExamFullyInCart = (exam: Exam) => {
     if (!exam.questions || exam.questions.length === 0) return false;
     return exam.questions.every((_: any, idx: number) => selectedQKeys.has(`${exam.id}_q${idx + 1}`));
@@ -493,42 +512,63 @@ export function App() {
                       <Eye className="w-4 h-4" /> 查看全卷
                     </button>
 
-                    {/* 勾选项 1: 下载 */}
-                    <button 
-                      className={`action-btn ${isExamFullyInCart(exam) ? 'active-cart-btn' : ''}`}
-                      onClick={() => handleToggleExamInCart(exam)}
-                      style={{
-                        padding: '0.45rem 0.65rem',
-                        fontSize: '0.85rem',
-                        background: isExamFullyInCart(exam) ? '#ecfdf5' : '#ffffff',
-                        color: isExamFullyInCart(exam) ? '#047857' : '#334155',
-                        borderColor: isExamFullyInCart(exam) ? '#10b981' : '#cbd5e1',
-                        fontWeight: isExamFullyInCart(exam) ? 600 : 400
-                      }}
-                    >
-                      <CheckSquare className="w-4 h-4" style={{ color: isExamFullyInCart(exam) ? '#10b981' : '#64748b' }} />
-                      {isExamFullyInCart(exam) ? '✓ 1. 已选入下载' : '1. 下载'}
-                    </button>
+                    {/* 勾选项: 下载 */}
+                    {(() => {
+                      const isCartActive = isExamFullyInCart(exam);
+                      return (
+                        <button 
+                          className={`action-btn ${isCartActive ? 'active-cart-btn' : ''}`}
+                          onClick={() => handleToggleExamInCart(exam)}
+                          style={{
+                            padding: '0.45rem 0.65rem',
+                            fontSize: '0.85rem',
+                            background: isCartActive ? '#ecfdf5' : '#ffffff',
+                            color: isCartActive ? '#047857' : '#334155',
+                            borderColor: isCartActive ? '#10b981' : '#cbd5e1',
+                            fontWeight: isCartActive ? 600 : 400,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
+                          }}
+                        >
+                          {isCartActive ? (
+                            <CheckSquare className="w-4 h-4 text-emerald-600" />
+                          ) : (
+                            <Square className="w-4 h-4 text-slate-400" />
+                          )}
+                          <span>{isCartActive ? '已选下载' : '下载'}</span>
+                        </button>
+                      );
+                    })()}
 
-                    {/* 勾选项 2: 同屏对比 */}
-                    <button 
-                      className={`action-btn ${(leftExam?.id === exam.id || rightExam?.id === exam.id) ? 'active-compare-btn' : ''}`}
-                      onClick={() => {
-                        setLeftExam(exam);
-                        setActiveTab('compare');
-                      }}
-                      style={{
-                        padding: '0.45rem 0.65rem',
-                        fontSize: '0.85rem',
-                        background: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? '#f0f9ff' : '#ffffff',
-                        color: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? '#0369a1' : '#334155',
-                        borderColor: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? '#0284c7' : '#cbd5e1',
-                        fontWeight: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? 600 : 400
-                      }}
-                    >
-                      <Columns className="w-4 h-4" style={{ color: (leftExam?.id === exam.id || rightExam?.id === exam.id) ? '#0284c7' : '#64748b' }} />
-                      {(leftExam?.id === exam.id || rightExam?.id === exam.id) ? '✓ 2. 对比中' : '2. 同屏对比'}
-                    </button>
+                    {/* 勾选项: 同屏对比 (静默勾选，不跳转页面!) */}
+                    {(() => {
+                      const isCompareActive = leftExam?.id === exam.id || rightExam?.id === exam.id;
+                      return (
+                        <button 
+                          className={`action-btn ${isCompareActive ? 'active-compare-btn' : ''}`}
+                          onClick={() => handleToggleCompareExam(exam)}
+                          style={{
+                            padding: '0.45rem 0.65rem',
+                            fontSize: '0.85rem',
+                            background: isCompareActive ? '#f0f9ff' : '#ffffff',
+                            color: isCompareActive ? '#0369a1' : '#334155',
+                            borderColor: isCompareActive ? '#0284c7' : '#cbd5e1',
+                            fontWeight: isCompareActive ? 600 : 400,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
+                          }}
+                        >
+                          {isCompareActive ? (
+                            <CheckSquare className="w-4 h-4 text-sky-600" />
+                          ) : (
+                            <Square className="w-4 h-4 text-slate-400" />
+                          )}
+                          <span>{isCompareActive ? '已选对比' : '同屏对比'}</span>
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
