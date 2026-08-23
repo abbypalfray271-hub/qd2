@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Exam, Question } from '../types';
+import { cleanStem } from '../utils';
 import { CheckSquare, Square, Eye, EyeOff, Search, Sparkles, Filter, CheckCircle2, XCircle, ShoppingCart, ArrowRight } from 'lucide-react';
 
 interface ModulesViewProps {
@@ -120,7 +121,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
       if (!selectedDistricts.has('全部') && !selectedDistricts.has(exam.district)) return;
 
       exam.questions.forEach((q, qIdx) => {
-        const qKey = `${exam.id}_q${qIdx}`;
+        const qKey = `${exam.id}_q${qIdx + 1}`;
         const secT = q.section_title || '';
         const grpT = q.group_title || '';
         const stem = q.stem || '';
@@ -481,7 +482,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                 <div style={{ marginBottom: '1rem' }}>
                   <div
                     style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.6 }}
-                    dangerouslySetInnerHTML={{ __html: q.stem }}
+                    dangerouslySetInnerHTML={{ __html: cleanStem(q.stem) }}
                   />
                 </div>
 

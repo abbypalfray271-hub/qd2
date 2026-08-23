@@ -21,12 +21,7 @@ import {
   Square
 } from 'lucide-react';
 import type { Exam, ActiveTab } from './types';
-
-// Helper to strip duplicate leading question numbers (e.g., "4. ")
-const cleanStem = (stem?: string) => {
-  if (!stem) return '';
-  return stem.replace(/^\d+[\.．\s]+/, '');
-};
+import { cleanStem } from './utils';
 
 const parseMarkdownTables = (input: string): string => {
   if (!input || !input.includes('|')) return input;
@@ -225,7 +220,8 @@ export function App() {
   
   // Single Exam Viewer Modal State
   const [viewingExam, setViewingExam] = useState<Exam | null>(null);
-  // showAnswers state removed for CartView
+  const [modalShowPassages, setModalShowPassages] = useState<boolean>(true);
+  const [modalShowAnswers, setModalShowAnswers] = useState<boolean>(true);
 
   // Side-by-Side Comparison State
   const [leftExam, setLeftExam] = useState<Exam | null>(null);
@@ -795,16 +791,68 @@ export function App() {
         {viewingExam && (
           <div className="no-print" style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
             <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '900px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
+              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
                   <h3 style={{ fontWeight: 700, fontSize: '1.1rem' }}>{viewingExam.title}</h3>
                   <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.2rem' }}>
                     {viewingExam.category} • {viewingExam.year} • {viewingExam.district}
                   </div>
                 </div>
-                <button onClick={() => setViewingExam(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.4rem', borderRadius: '6px' }}>
-                  <X className="w-5 h-5 text-slate-500" />
-                </button>
+
+                {/* Header Controls: Passages & Answers Toggle + Close Button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  {/* Toggle 1: Passages */}
+                  <label
+                    onClick={() => setModalShowPassages(prev => !prev)}
+                    title="点击开启/隐藏背景材料与阅读原文"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      color: modalShowPassages ? '#0284c7' : '#64748b',
+                      background: modalShowPassages ? '#e0f2fe' : '#f8fafc',
+                      padding: '0.35rem 0.75rem',
+                      borderRadius: '20px',
+                      border: `1px solid ${modalShowPassages ? '#0284c7' : '#cbd5e1'}`,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {modalShowPassages ? <CheckSquare className="w-3.5 h-3.5 text-sky-600" /> : <Square className="w-3.5 h-3.5 text-slate-400" />}
+                    <span>背景材料</span>
+                  </label>
+
+                  {/* Toggle 2: Answers */}
+                  <label
+                    onClick={() => setModalShowAnswers(prev => !prev)}
+                    title="点击开启/隐藏参考答案与详细解析"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      color: modalShowAnswers ? '#059669' : '#64748b',
+                      background: modalShowAnswers ? '#d1fae5' : '#f8fafc',
+                      padding: '0.35rem 0.75rem',
+                      borderRadius: '20px',
+                      border: `1px solid ${modalShowAnswers ? '#10b981' : '#cbd5e1'}`,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {modalShowAnswers ? <CheckSquare className="w-3.5 h-3.5 text-emerald-600" /> : <Square className="w-3.5 h-3.5 text-slate-400" />}
+                    <span>答案/解析</span>
+                  </label>
+
+                  <button onClick={() => setViewingExam(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.4rem', borderRadius: '6px', marginLeft: '0.25rem' }}>
+                    <X className="w-5 h-5 text-slate-500" />
+                  </button>
+                </div>
               </div>
 
               <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
@@ -826,7 +874,7 @@ export function App() {
                       )}
 
                       <div className="question-item">
-                        {q.passage && <div className="passage-box"><RichContent content={q.passage} /></div>}
+                        {modalShowPassages && q.passage && <div className="passage-box"><RichContent content={q.passage} /></div>}
                         <div style={{ fontWeight: 600, margin: '0.5rem 0', display: 'flex', gap: '0.3rem' }}>
                           <span>{idx + 1}.</span> <RichContent content={cleanStem(q.stem)} />
                         </div>
@@ -837,7 +885,7 @@ export function App() {
                             ))}
                           </div>
                         )}
-                        {(q.answer || q.analysis) && (
+                        {modalShowAnswers && (q.answer || q.analysis) && (
                           <div className="answer-box">
                             {q.answer && <div><strong>【答案】</strong>: <RichContent content={q.answer} /></div>}
                             {q.analysis && <div style={{ marginTop: '0.4rem' }}><strong>【解析】</strong>: <RichContent content={q.analysis} /></div>}

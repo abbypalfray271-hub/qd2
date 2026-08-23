@@ -2,6 +2,7 @@
 import html2pdf from 'html2pdf.js';
 import React, { useState, useMemo } from 'react';
 import type { Exam, Question } from '../types';
+import { cleanStem } from '../utils';
 import { ShoppingCart, FileText, FileSpreadsheet, Trash2, ArrowRight, CheckSquare, Square } from 'lucide-react';
 
 interface CartViewProps {
@@ -67,7 +68,7 @@ export const CartView: React.FC<CartViewProps> = ({
 
     examsData.forEach((exam) => {
       exam.questions.forEach((q, qIdx) => {
-        const qKey = `${exam.id}_q${qIdx}`;
+        const qKey = `${exam.id}_q${qIdx + 1}`;
         if (selectedQKeys.has(qKey)) {
           list.push({
             qKey,
@@ -83,11 +84,26 @@ export const CartView: React.FC<CartViewProps> = ({
     return list;
   }, [examsData, selectedQKeys]);
 
-  // Total score calculation
+  // Smart Total score calculation (with 50-pt writing prompt deduplication per exam)
   const totalScore = useMemo(() => {
+    const countedWritingMap = new Set<string>();
+
     return selectedQuestions.reduce((acc, curr) => {
-      const s = parseInt(String(curr.question.score || 2), 10);
-      return acc + (isNaN(s) ? 2 : s);
+      const scoreNum = parseInt(String(curr.question.score || 2), 10);
+      const s = isNaN(scoreNum) ? 2 : scoreNum;
+
+      // Extract examId from qKey e.g. "exam_xxx_q1" -> "exam_xxx"
+      const examId = curr.qKey.substring(0, curr.qKey.lastIndexOf('_q'));
+
+      if (s === 50) {
+        if (countedWritingMap.has(examId)) {
+          // Additional 50-point choice writing prompt in the same exam -> do not double count
+          return acc;
+        }
+        countedWritingMap.add(examId);
+      }
+
+      return acc + s;
     }, 0);
   }, [selectedQuestions]);
 
@@ -134,7 +150,7 @@ export const CartView: React.FC<CartViewProps> = ({
         html += '<div class="passage-box"><strong>【阅读材料】</strong><br/>' + q.passage + '</div>';
       }
 
-      html += '<div class="stem">' + q.stem + '</div>';
+      html += '<div class="stem">' + cleanStem(q.stem) + '</div>';
 
       if (q.options && q.options.length > 0) {
         q.options.forEach(opt => {
@@ -453,7 +469,7 @@ export const CartView: React.FC<CartViewProps> = ({
                   <div style={{ marginBottom: '1rem' }}>
                     <div
                       style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.6 }}
-                      dangerouslySetInnerHTML={{ __html: q.stem }}
+                      dangerouslySetInnerHTML={{ __html: cleanStem(q.stem) }}
                     />
                   </div>
 
