@@ -350,7 +350,7 @@ export function App() {
           <div className="logo-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <img src="/images/shejie_avatar.jpg" className="shejie-avatar-ring" alt="舌姐" />
             <div>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800 }}>舌姐中考语文真题云平台</span>
+              <span style={{ fontSize: '1.25rem', fontWeight: 800 }}>舌姐中文</span>
             </div>
           </div>
 
