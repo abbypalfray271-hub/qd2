@@ -571,15 +571,6 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                 <div>
                   {/* Top Bar */}
                   <div className="grid-card-header">
-                    <div className="grid-card-title" onClick={() => handleToggleSelectQ(qKey)}>
-                      {isChecked ? (
-                        <CheckSquare className="w-5 h-5 text-sky-600" />
-                      ) : (
-                        <Square className="w-5 h-5 text-slate-400" />
-                      )}
-                      <span>第 {idx + 1} 题</span>
-                    </div>
-
                     <div className="grid-card-badges">
                       <span className="badge badge-orig-index" style={{ fontSize: '0.7rem' }}>原卷第 {item.origIndex} 题</span>
                       <span className="badge badge-mock" style={{ fontSize: '0.7rem' }}>{year}</span>
