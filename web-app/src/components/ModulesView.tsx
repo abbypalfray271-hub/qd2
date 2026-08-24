@@ -23,16 +23,16 @@ export const MODULE_CATEGORIES = [
   { id: 'writing', name: '七、写作', icon: '✍️', keyword: '写作' }
 ];
 
-// Curated palette of soft, harmonious micro-tint background themes for grouping exam cards
+// Curated palette of high-contrast solid accent themes for exam grouping
 export const EXAM_THEMES = [
-  { bg: '#f0f9ff', border: '#bae6fd', borderLeft: '#0284c7' }, // Ice Blue Tint
-  { bg: '#f0fdf4', border: '#bbf7d0', borderLeft: '#166534' }, // Mint Green Tint
-  { bg: '#f5f3ff', border: '#ddd6fe', borderLeft: '#6d28d9' }, // Lavender Violet Tint
-  { bg: '#fffbeb', border: '#fde68a', borderLeft: '#b45309' }, // Amber Yellow Tint
-  { bg: '#f0fdfa', border: '#99f6e4', borderLeft: '#0f766e' }, // Teal Cyan Tint
-  { bg: '#fff1f2', border: '#fecdd3', borderLeft: '#be123c' }, // Rose Pink Tint
-  { bg: '#eef2ff', border: '#c7d2fe', borderLeft: '#4338ca' }, // Slate Indigo Tint
-  { bg: '#fff7ed', border: '#ffedd5', borderLeft: '#c2410c' }  // Peach Orange Tint
+  { bg: '#e0f2fe', border: '#7dd3fc', accent: '#0284c7' }, // Vivid Sky Blue
+  { bg: '#dcfce7', border: '#86efac', accent: '#16a34a' }, // Vivid Emerald Green
+  { bg: '#ede9fe', border: '#c4b5fd', accent: '#7c3aed' }, // Vivid Purple
+  { bg: '#fef3c7', border: '#fde047', accent: '#d97706' }, // Vivid Amber Gold
+  { bg: '#ffe4e6', border: '#fca5a5', accent: '#e11d48' }, // Vivid Crimson Rose
+  { bg: '#ccfbf1', border: '#5eead4', accent: '#0d9488' }, // Vivid Teal Cyan
+  { bg: '#e0e7ff', border: '#a5b4fc', accent: '#4f46e5' }, // Vivid Indigo
+  { bg: '#ffedd5', border: '#fdba74', accent: '#ea580c' }  // Vivid Orange Peach
 ];
 
 export const getExamTheme = (examId: string) => {
@@ -592,9 +592,10 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                 id={`qcard-${qKey}`}
                 className={`question-grid-card ${isChecked ? 'is-checked' : ''} ${isHighlighted ? 'highlight-pulse' : ''}`}
                 style={{
-                  background: isChecked ? '#e0f2fe' : theme.bg,
+                  background: isChecked ? '#bae6fd' : theme.bg,
                   borderColor: isChecked ? '#0284c7' : theme.border,
-                  boxShadow: isChecked ? '0 0 0 2px rgba(2, 132, 199, 0.25)' : '0 2px 4px rgba(0, 0, 0, 0.03)'
+                  borderLeft: `6px solid ${isChecked ? '#0284c7' : theme.accent}`,
+                  boxShadow: isChecked ? '0 0 0 3px rgba(2, 132, 199, 0.35)' : '0 2px 6px rgba(0, 0, 0, 0.05)'
                 }}
               >
                 <div>
@@ -674,10 +675,10 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                 id={`qcard-${qKey}`}
                 className={`question-item ${isHighlighted ? 'highlight-pulse' : ''}`}
                 style={{
-                  background: isChecked ? '#f0f9ff' : theme.bg,
+                  background: isChecked ? '#e0f2fe' : theme.bg,
                   borderColor: isChecked ? '#0284c7' : theme.border,
-                  borderLeft: `4px solid ${isChecked ? '#0284c7' : theme.borderLeft}`,
-                  boxShadow: isChecked ? '0 0 0 2px rgba(2, 132, 199, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.05)',
+                  borderLeft: `6px solid ${isChecked ? '#0284c7' : theme.accent}`,
+                  boxShadow: isChecked ? '0 0 0 2px rgba(2, 132, 199, 0.2)' : '0 2px 5px rgba(0, 0, 0, 0.05)',
                   transition: 'all 0.2s ease',
                   position: 'relative'
                 }}
