@@ -23,6 +23,28 @@ export const MODULE_CATEGORIES = [
   { id: 'writing', name: '七、写作', icon: '✍️', keyword: '写作' }
 ];
 
+// Curated palette of soft, harmonious micro-tint background themes for grouping exam cards
+export const EXAM_THEMES = [
+  { bg: '#f0f9ff', border: '#bae6fd', borderLeft: '#0284c7' }, // Ice Blue Tint
+  { bg: '#f0fdf4', border: '#bbf7d0', borderLeft: '#166534' }, // Mint Green Tint
+  { bg: '#f5f3ff', border: '#ddd6fe', borderLeft: '#6d28d9' }, // Lavender Violet Tint
+  { bg: '#fffbeb', border: '#fde68a', borderLeft: '#b45309' }, // Amber Yellow Tint
+  { bg: '#f0fdfa', border: '#99f6e4', borderLeft: '#0f766e' }, // Teal Cyan Tint
+  { bg: '#fff1f2', border: '#fecdd3', borderLeft: '#be123c' }, // Rose Pink Tint
+  { bg: '#eef2ff', border: '#c7d2fe', borderLeft: '#4338ca' }, // Slate Indigo Tint
+  { bg: '#fff7ed', border: '#ffedd5', borderLeft: '#c2410c' }  // Peach Orange Tint
+];
+
+export const getExamTheme = (examId: string) => {
+  let hash = 0;
+  for (let i = 0; i < examId.length; i++) {
+    hash = (hash << 5) - hash + examId.charCodeAt(i);
+    hash |= 0;
+  }
+  const idx = Math.abs(hash) % EXAM_THEMES.length;
+  return EXAM_THEMES[idx];
+};
+
 export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKeys: externalQKeys, onToggleSelectQ: externalToggleQ, onSelectBatch, onClearAll, onNavigateToCart }) => {
   const [selectedModule, setSelectedModule] = useState<string>('base');
   const [sourceFilter, setSourceFilter] = useState<'all' | '正式真题' | '区县模拟'>('正式真题');
@@ -160,7 +182,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
 
   // Categorized questions computation
   const categorizedQuestions = useMemo(() => {
-    const list: { qKey: string; examCategory: string; year: string; district: string; question: Question; origIndex: number }[] = [];
+    const list: { qKey: string; examId: string; examCategory: string; year: string; district: string; question: Question; origIndex: number }[] = [];
 
     examsData.forEach((exam) => {
       const isSpecificDistrictSelected = !selectedDistricts.has('全部') && !selectedDistricts.has('青岛市级');
@@ -207,6 +229,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
 
         list.push({
           qKey,
+          examId: exam.id,
           examCategory: exam.category,
           year: exam.year,
           district: exam.district,
@@ -561,12 +584,18 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
             const { qKey, examCategory, year, district, question: q } = item;
             const isChecked = selectedQKeys.has(qKey);
             const isHighlighted = highlightedQKey === qKey;
+            const theme = getExamTheme(item.examId);
 
             return (
               <div
                 key={qKey}
                 id={`qcard-${qKey}`}
                 className={`question-grid-card ${isChecked ? 'is-checked' : ''} ${isHighlighted ? 'highlight-pulse' : ''}`}
+                style={{
+                  background: isChecked ? '#e0f2fe' : theme.bg,
+                  borderColor: isChecked ? '#0284c7' : theme.border,
+                  boxShadow: isChecked ? '0 0 0 2px rgba(2, 132, 199, 0.25)' : '0 2px 4px rgba(0, 0, 0, 0.03)'
+                }}
               >
                 <div>
                   {/* Top Bar */}
@@ -637,6 +666,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
             const userChoice = userSelectedOpts[qKey];
             const isAnswerShow = mode === 'teacher' || expandedAnswers[qKey];
             const isHighlighted = highlightedQKey === qKey;
+            const theme = getExamTheme(item.examId);
 
             return (
               <div
@@ -644,8 +674,9 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                 id={`qcard-${qKey}`}
                 className={`question-item ${isHighlighted ? 'highlight-pulse' : ''}`}
                 style={{
-                  background: isChecked ? '#f0f9ff' : '#ffffff',
-                  borderColor: isChecked ? '#0284c7' : '#e2e8f0',
+                  background: isChecked ? '#f0f9ff' : theme.bg,
+                  borderColor: isChecked ? '#0284c7' : theme.border,
+                  borderLeft: `4px solid ${isChecked ? '#0284c7' : theme.borderLeft}`,
                   boxShadow: isChecked ? '0 0 0 2px rgba(2, 132, 199, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.05)',
                   transition: 'all 0.2s ease',
                   position: 'relative'
