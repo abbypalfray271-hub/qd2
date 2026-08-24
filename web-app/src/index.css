@@ -205,6 +205,13 @@ body {
   color: #0369a1;
 }
 
+.badge-orig-index {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  font-weight: 700;
+}
+
 .exam-actions {
   display: flex;
   gap: 0.5rem;

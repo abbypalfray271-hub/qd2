@@ -46,6 +46,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
     district: string;
     question: Question;
     idx: number;
+    origIndex: number;
   } | null>(null);
 
   const handleSelectSourceFilter = (source: '正式真题' | '区县模拟' | 'all') => {
@@ -156,7 +157,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
 
   // Categorized questions computation
   const categorizedQuestions = useMemo(() => {
-    const list: { qKey: string; examCategory: string; year: string; district: string; question: Question }[] = [];
+    const list: { qKey: string; examCategory: string; year: string; district: string; question: Question; origIndex: number }[] = [];
 
     examsData.forEach((exam) => {
       const isSpecificDistrictSelected = !selectedDistricts.has('全部') && !selectedDistricts.has('青岛市级');
@@ -206,7 +207,8 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
           examCategory: exam.category,
           year: exam.year,
           district: exam.district,
-          question: q
+          question: q,
+          origIndex: qIdx + 1
         });
       });
     });
@@ -532,7 +534,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                   key={item.qKey}
                   onClick={() => scrollToQuestion(item.qKey)}
                   className={`q-nav-btn ${isSelected ? 'selected' : ''}`}
-                  title={`第${idx + 1}题: ${getSnippet(item.question.stem, 35)}`}
+                  title={`筛选第${idx + 1}题 (原卷第${item.origIndex}题): ${getSnippet(item.question.stem, 35)}`}
                 >
                   {idx + 1}
                   {isSelected && <span style={{ fontSize: '0.65rem', marginLeft: '1px' }}>✓</span>}
@@ -576,6 +578,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                     </div>
 
                     <div className="grid-card-badges">
+                      <span className="badge badge-orig-index" style={{ fontSize: '0.7rem' }}>原卷第 {item.origIndex} 题</span>
                       <span className="badge badge-mock" style={{ fontSize: '0.7rem' }}>{year}</span>
                       <span className="badge badge-real" style={{ fontSize: '0.7rem' }}>{examCategory}</span>
                       <span className="badge badge-mock" style={{ fontSize: '0.7rem' }}>{district}</span>
@@ -617,7 +620,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
 
                   <button
                     className="action-btn"
-                    onClick={() => setPreviewItem({ qKey, examCategory, year, district, question: q, idx })}
+                    onClick={() => setPreviewItem({ qKey, examCategory, year, district, question: q, idx, origIndex: item.origIndex })}
                     style={{ fontSize: '0.82rem', color: '#0284c7', borderColor: '#bae6fd', padding: '0.4rem 0.65rem' }}
                     title="点击查看原题全貌、完整阅读材料与参考答案"
                   >
@@ -665,7 +668,8 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                     <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0f172a' }}>第 {idx + 1} 题</span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <span className="badge badge-orig-index" style={{ fontSize: '0.8rem', padding: '0.2rem 0.55rem' }}>📄 原卷第 {item.origIndex} 题</span>
                     <span className="badge badge-mock">{year}</span>
                     <span className="badge badge-real">{examCategory}</span>
                     <span className="badge badge-mock">{district}</span>
@@ -770,6 +774,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
             <div className="q-preview-modal-header">
               <div style={{ fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <span>第 {previewItem.idx + 1} 题全貌预览</span>
+                <span className="badge badge-orig-index" style={{ background: '#059669', color: '#ffffff', border: 'none' }}>原卷第 {previewItem.origIndex} 题</span>
                 <span className="badge badge-mock" style={{ background: '#38bdf8', color: '#0f172a' }}>{previewItem.year}</span>
                 <span className="badge badge-real">{previewItem.examCategory}</span>
                 <span className="badge badge-mock">{previewItem.district}</span>
