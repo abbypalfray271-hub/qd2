@@ -1064,8 +1064,8 @@ export function App() {
               {/* QR Image Box */}
               <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'inline-block', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', marginBottom: '1rem' }}>
                 <img
-                  src="/images/shejie_qr.jpg"
-                  alt="舌姐小红书二维码"
+                  src="/images/shejie_avatar.jpg"
+                  alt="舌姐小红书"
                   style={{ width: '260px', height: 'auto', maxHeight: '340px', objectFit: 'contain', borderRadius: '12px', border: '2px solid #38bdf8' }}
                 />
               </div>
