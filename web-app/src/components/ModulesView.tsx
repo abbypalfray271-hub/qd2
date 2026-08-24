@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { Exam, Question } from '../types';
 import { cleanStem } from '../utils';
-import { CheckSquare, Square, Eye, EyeOff, Search, Sparkles, Filter, CheckCircle2, XCircle, ShoppingCart, ArrowRight } from 'lucide-react';
+import { CheckSquare, Square, Eye, EyeOff, Search, Sparkles, Filter, CheckCircle2, XCircle, ShoppingCart, ArrowRight, LayoutGrid, List, Hash, X } from 'lucide-react';
 
 interface ModulesViewProps {
   examsData: Exam[];
@@ -28,6 +28,25 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
   const [sourceFilter, setSourceFilter] = useState<'all' | '正式真题' | '区县模拟'>('正式真题');
   const [selectedYears, setSelectedYears] = useState<Set<string>>(new Set(['全部']));
   const [selectedDistricts, setSelectedDistricts] = useState<Set<string>>(new Set(['全部']));
+
+  // View layout mode: 'grid' (缩略图卡片网格) | 'list' (详细列表流)
+  const [viewDisplayMode, setViewDisplayMode] = useState<'grid' | 'list'>('grid');
+
+  // Toggle for Question Number Nav Matrix Drawer
+  const [showNavMatrix, setShowNavMatrix] = useState<boolean>(false);
+
+  // Active highlighted question key for smooth scrolling pulse animation
+  const [highlightedQKey, setHighlightedQKey] = useState<string | null>(null);
+
+  // Full Question Preview Modal State
+  const [previewItem, setPreviewItem] = useState<{
+    qKey: string;
+    examCategory: string;
+    year: string;
+    district: string;
+    question: Question;
+    idx: number;
+  } | null>(null);
 
   const handleSelectSourceFilter = (source: '正式真题' | '区县模拟' | 'all') => {
     setSourceFilter(source);
@@ -97,6 +116,32 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
       if (next.has(qKey)) next.delete(qKey);
       else next.add(qKey);
       setInternalQKeys(next);
+    }
+  };
+
+  // Helper to extract clean text snippet from HTML stem string
+  const getSnippet = (htmlStr: string, maxLen: number = 80): string => {
+    if (!htmlStr) return '';
+    const cleanText = htmlStr
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .trim();
+    if (cleanText.length <= maxLen) return cleanText;
+    return cleanText.slice(0, maxLen) + '...';
+  };
+
+  // Helper to smooth scroll to specific question card and trigger highlight pulse
+  const scrollToQuestion = (qKey: string) => {
+    const targetEl = document.getElementById(`qcard-${qKey}`);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHighlightedQKey(qKey);
+      setTimeout(() => {
+        setHighlightedQKey(null);
+      }, 1600);
     }
   };
 
@@ -175,8 +220,6 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
     return categorizedQuestions.every(item => selectedQKeys.has(item.qKey));
   }, [categorizedQuestions, selectedQKeys]);
 
-// Selection Handlers handled above
-
   const handleSelectAllCurrent = () => {
     const keysToSelect = categorizedQuestions.map(item => item.qKey);
     if (isAllCurrentSelected) {
@@ -223,7 +266,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
             面向老师与学生的“看、比、练、印” 7 大考点专项中心
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '1rem', maxWidth: '800px' }}>
-            可单独切换选择【🏆正式真题】与【🏫区县模拟】，勾选试题一键批量导出 Word (.doc) 或 PDF，随时进行高效考点突击！
+            支持【🔳 缩略卡片网格】与【📄 详细列表】双视图自由切换，内置【🔢 题号直达导航盘】，一键批量加组卷！
           </p>
         </div>
       </div>
@@ -376,10 +419,10 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
         </div>
       </div>
 
-      {/* 4. Unified Export & Check Toolbar Card */}
+      {/* 4. Unified Export & Check Toolbar Card + View Mode & Nav Switcher */}
       <div className="filter-card no-print" style={{ padding: '1rem 1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button
               className="action-btn"
               onClick={handleSelectAllCurrent}
@@ -407,7 +450,58 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
             </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* View Switcher: Grid vs List */}
+            <div style={{ display: 'flex', background: '#f1f5f9', padding: '0.2rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+              <button
+                className={`action-btn ${viewDisplayMode === 'grid' ? 'action-btn-primary' : ''}`}
+                onClick={() => setViewDisplayMode('grid')}
+                style={{
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '0.4rem 0.8rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  background: viewDisplayMode === 'grid' ? '#0284c7' : 'transparent',
+                  color: viewDisplayMode === 'grid' ? '#fff' : '#475569'
+                }}
+                title="网格平铺渲染，一屏展示多题，高效率扫读"
+              >
+                <LayoutGrid className="w-4 h-4" /> 🔳 缩略卡片
+              </button>
+              <button
+                className={`action-btn ${viewDisplayMode === 'list' ? 'action-btn-primary' : ''}`}
+                onClick={() => setViewDisplayMode('list')}
+                style={{
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '0.4rem 0.8rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  background: viewDisplayMode === 'list' ? '#0284c7' : 'transparent',
+                  color: viewDisplayMode === 'list' ? '#fff' : '#475569'
+                }}
+                title="传统流式展示，渲染完整题干与选项"
+              >
+                <List className="w-4 h-4" /> 📄 详细列表
+              </button>
+            </div>
+
+            {/* Question Nav Matrix Drawer Button */}
+            <button
+              className="action-btn"
+              onClick={() => setShowNavMatrix(!showNavMatrix)}
+              style={{
+                background: showNavMatrix ? '#e0f2fe' : '#ffffff',
+                borderColor: showNavMatrix ? '#0284c7' : '#cbd5e1',
+                color: showNavMatrix ? '#0284c7' : '#334155',
+                fontWeight: 600
+              }}
+            >
+              <Hash className="w-4 h-4" /> 🔢 题号导航盘 {showNavMatrix ? '▲' : '▼'}
+            </button>
+
+            {/* Cart Navigate Button */}
             <button
               className="action-btn action-btn-primary"
               onClick={onNavigateToCart}
@@ -419,24 +513,136 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
         </div>
       </div>
 
-      {/* 5. Minimal Light-Theme Question Cards Stream */}
-      <div className="questions-stream">
-        {categorizedQuestions.length === 0 ? (
-          <div className="filter-card" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-            <Filter className="w-12 h-12 text-slate-400 mb-2" style={{ margin: '0 auto 0.5rem' }} />
-            <p>未筛选到符合条件的专项试题，请调整筛选条件试试。</p>
+      {/* 4.5. Question Number Quick Navigation Matrix Panel */}
+      {showNavMatrix && (
+        <div className="q-nav-matrix-panel no-print">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Hash className="w-4 h-4 text-sky-600" />
+              <span>题号快速直达盘（共 {categorizedQuestions.length} 道，已勾选 {selectedQKeys.size} 道）</span>
+            </div>
+            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>💡 点击题号即可平滑滚动直达目标试题</span>
           </div>
-        ) : (
-          categorizedQuestions.map((item, idx) => {
+
+          <div className="q-nav-matrix-grid">
+            {categorizedQuestions.map((item, idx) => {
+              const isSelected = selectedQKeys.has(item.qKey);
+              return (
+                <button
+                  key={item.qKey}
+                  onClick={() => scrollToQuestion(item.qKey)}
+                  className={`q-nav-btn ${isSelected ? 'selected' : ''}`}
+                  title={`第${idx + 1}题: ${getSnippet(item.question.stem, 35)}`}
+                >
+                  {idx + 1}
+                  {isSelected && <span style={{ fontSize: '0.65rem', marginLeft: '1px' }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 5. Main Questions Stream / Grid Render */}
+      {categorizedQuestions.length === 0 ? (
+        <div className="filter-card" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+          <Filter className="w-12 h-12 text-slate-400 mb-2" style={{ margin: '0 auto 0.5rem' }} />
+          <p>未筛选到符合条件的专项试题，请调整筛选条件试试。</p>
+        </div>
+      ) : viewDisplayMode === 'grid' ? (
+        /* 🔳 COMPACT CARD GRID VIEW */
+        <div className="questions-grid-container">
+          {categorizedQuestions.map((item, idx) => {
             const { qKey, examCategory, year, district, question: q } = item;
             const isChecked = selectedQKeys.has(qKey);
-            const userChoice = userSelectedOpts[qKey];
-            const isAnswerShow = mode === 'teacher' || expandedAnswers[qKey];
+            const isHighlighted = highlightedQKey === qKey;
 
             return (
               <div
                 key={qKey}
-                className="question-item"
+                id={`qcard-${qKey}`}
+                className={`question-grid-card ${isChecked ? 'is-checked' : ''} ${isHighlighted ? 'highlight-pulse' : ''}`}
+              >
+                <div>
+                  {/* Top Bar */}
+                  <div className="grid-card-header">
+                    <div className="grid-card-title" onClick={() => handleToggleSelectQ(qKey)}>
+                      {isChecked ? (
+                        <CheckSquare className="w-5 h-5 text-sky-600" />
+                      ) : (
+                        <Square className="w-5 h-5 text-slate-400" />
+                      )}
+                      <span>第 {idx + 1} 题</span>
+                    </div>
+
+                    <div className="grid-card-badges">
+                      <span className="badge badge-mock" style={{ fontSize: '0.7rem' }}>{year}</span>
+                      <span className="badge badge-real" style={{ fontSize: '0.7rem' }}>{examCategory}</span>
+                      <span className="badge badge-mock" style={{ fontSize: '0.7rem' }}>{district}</span>
+                    </div>
+                  </div>
+
+                  {/* Passage Badge (If text exists) */}
+                  {q.passage && (
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <span className="shejie-badge" style={{ fontSize: '0.72rem', padding: '0.15rem 0.5rem', background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd' }}>
+                        📖 含阅读语段
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Stem Snippet Preview */}
+                  <div className="grid-card-snippet" title={cleanStem(q.stem)}>
+                    {getSnippet(q.stem, 90)}
+                  </div>
+                </div>
+
+                {/* Card Footer Actions */}
+                <div className="grid-card-footer">
+                  <button
+                    className={`action-btn ${isChecked ? 'action-btn-primary' : ''}`}
+                    onClick={() => handleToggleSelectQ(qKey)}
+                    style={{ flex: 1, fontSize: '0.82rem', padding: '0.4rem' }}
+                  >
+                    {isChecked ? (
+                      <>
+                        <CheckSquare className="w-4 h-4" /> 已选入组卷
+                      </>
+                    ) : (
+                      <>
+                        <Square className="w-4 h-4" /> 加入组卷
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    className="action-btn"
+                    onClick={() => setPreviewItem({ qKey, examCategory, year, district, question: q, idx })}
+                    style={{ fontSize: '0.82rem', color: '#0284c7', borderColor: '#bae6fd', padding: '0.4rem 0.65rem' }}
+                    title="点击查看原题全貌、完整阅读材料与参考答案"
+                  >
+                    <Eye className="w-4 h-4" /> 查看全题
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* 📄 FULL DETAILED LIST VIEW */
+        <div className="questions-stream">
+          {categorizedQuestions.map((item, idx) => {
+            const { qKey, examCategory, year, district, question: q } = item;
+            const isChecked = selectedQKeys.has(qKey);
+            const userChoice = userSelectedOpts[qKey];
+            const isAnswerShow = mode === 'teacher' || expandedAnswers[qKey];
+            const isHighlighted = highlightedQKey === qKey;
+
+            return (
+              <div
+                key={qKey}
+                id={`qcard-${qKey}`}
+                className={`question-item ${isHighlighted ? 'highlight-pulse' : ''}`}
                 style={{
                   background: isChecked ? '#f0f9ff' : '#ffffff',
                   borderColor: isChecked ? '#0284c7' : '#e2e8f0',
@@ -552,9 +758,88 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                 )}
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
+
+      {/* 6. FULL QUESTION PREVIEW MODAL */}
+      {previewItem && (
+        <div className="q-preview-modal-overlay" onClick={() => setPreviewItem(null)}>
+          <div className="q-preview-modal-content" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="q-preview-modal-header">
+              <div style={{ fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span>第 {previewItem.idx + 1} 题全貌预览</span>
+                <span className="badge badge-mock" style={{ background: '#38bdf8', color: '#0f172a' }}>{previewItem.year}</span>
+                <span className="badge badge-real">{previewItem.examCategory}</span>
+                <span className="badge badge-mock">{previewItem.district}</span>
+              </div>
+              <button
+                onClick={() => setPreviewItem(null)}
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="q-preview-modal-body">
+              {/* Passage */}
+              {previewItem.question.passage && (
+                <div className="passage-box" style={{ background: '#f8fafc', borderLeft: '4px solid #0284c7', padding: '1rem', borderRadius: '6px', marginBottom: '1rem' }}>
+                  <div style={{ fontWeight: 700, color: '#0284c7', fontSize: '0.9rem', marginBottom: '0.5rem' }}>📖 【阅读语段 / 背景材料】</div>
+                  <div style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '2.2', whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: previewItem.question.passage }} />
+                </div>
+              )}
+
+              {/* Stem */}
+              <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', margin: '1rem 0', lineHeight: 1.6 }}>
+                <div dangerouslySetInnerHTML={{ __html: cleanStem(previewItem.question.stem) }} />
+              </div>
+
+              {/* Options */}
+              {previewItem.question.options && previewItem.question.options.length > 0 && (
+                <div className="options-list" style={{ gap: '0.75rem', marginBottom: '1rem' }}>
+                  {previewItem.question.options.map((opt, optIdx) => (
+                    <div key={optIdx} className="option-item" dangerouslySetInnerHTML={{ __html: opt }} />
+                  ))}
+                </div>
+              )}
+
+              {/* Answer & Analysis Box */}
+              <div className="answer-box" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '1rem', marginTop: '1rem' }}>
+                <div style={{ fontWeight: 700, color: '#166534', fontSize: '0.9rem', marginBottom: '0.4rem' }}>🎯 【参考答案】</div>
+                <div style={{ color: '#14532d', fontSize: '0.95rem', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: previewItem.question.answer }} />
+                <div style={{ fontWeight: 700, color: '#166534', fontSize: '0.9rem', marginTop: '0.85rem', marginBottom: '0.4rem' }}>💡 【详细解析】</div>
+                <div style={{ color: '#14532d', fontSize: '0.95rem', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: previewItem.question.analysis }} />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="q-preview-modal-footer">
+              <button
+                className={`action-btn ${selectedQKeys.has(previewItem.qKey) ? 'action-btn-primary' : ''}`}
+                onClick={() => handleToggleSelectQ(previewItem.qKey)}
+                style={{ padding: '0.6rem 1.25rem', fontWeight: 700, background: selectedQKeys.has(previewItem.qKey) ? '#0284c7' : '#ffffff', color: selectedQKeys.has(previewItem.qKey) ? '#ffffff' : '#334155' }}
+              >
+                {selectedQKeys.has(previewItem.qKey) ? (
+                  <>
+                    <CheckSquare className="w-4 h-4" /> 🟢 已加入切片组卷库 (点击可取消勾选)
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-4 h-4" /> ➕ 加入切片组卷库
+                  </>
+                )}
+              </button>
+
+              <button className="action-btn" onClick={() => setPreviewItem(null)} style={{ padding: '0.6rem 1.25rem' }}>
+                关闭预览
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
