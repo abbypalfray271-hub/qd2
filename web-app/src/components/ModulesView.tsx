@@ -771,7 +771,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
             <div className="q-preview-modal-header">
               <div style={{ fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <span>第 {previewItem.idx + 1} 题全貌预览</span>
-                <span className="badge badge-orig-index" style={{ background: '#059669', color: '#ffffff', border: 'none', fontSize: '0.92rem' }}>第 {previewItem.origIndex} 题</span>
+                <span className="badge badge-orig-index" style={{ background: '#38bdf8', color: '#0f172a', border: 'none', fontSize: '0.92rem', fontWeight: 800 }}>第 {previewItem.origIndex} 题</span>
                 <span className="badge badge-mock" style={{ background: '#38bdf8', color: '#0f172a' }}>{previewItem.year}</span>
                 <span className="badge badge-real">{previewItem.examCategory}</span>
                 <span className="badge badge-mock">{previewItem.district}</span>
