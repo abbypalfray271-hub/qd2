@@ -572,10 +572,10 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                   {/* Top Bar */}
                   <div className="grid-card-header">
                     <div className="grid-card-badges">
-                      <span className="badge badge-orig-index" style={{ fontSize: '0.7rem' }}>原卷第 {item.origIndex} 题</span>
-                      <span className="badge badge-mock" style={{ fontSize: '0.7rem' }}>{year}</span>
-                      <span className="badge badge-real" style={{ fontSize: '0.7rem' }}>{examCategory}</span>
-                      <span className="badge badge-mock" style={{ fontSize: '0.7rem' }}>{district}</span>
+                      <span className="badge badge-orig-index" style={{ fontSize: '0.95rem', padding: '0.25rem 0.65rem' }}>第 {item.origIndex} 题</span>
+                      <span className="badge badge-mock" style={{ fontSize: '0.75rem' }}>{year}</span>
+                      <span className="badge badge-real" style={{ fontSize: '0.75rem' }}>{examCategory}</span>
+                      <span className="badge badge-mock" style={{ fontSize: '0.75rem' }}>{district}</span>
                     </div>
                   </div>
 
@@ -666,7 +666,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <span className="badge badge-orig-index" style={{ fontSize: '0.8rem', padding: '0.2rem 0.55rem' }}>📄 原卷第 {item.origIndex} 题</span>
+                    <span className="badge badge-orig-index" style={{ fontSize: '0.88rem', padding: '0.25rem 0.6rem' }}>📄 第 {item.origIndex} 题</span>
                     <span className="badge badge-mock">{year}</span>
                     <span className="badge badge-real">{examCategory}</span>
                     <span className="badge badge-mock">{district}</span>
@@ -771,7 +771,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
             <div className="q-preview-modal-header">
               <div style={{ fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <span>第 {previewItem.idx + 1} 题全貌预览</span>
-                <span className="badge badge-orig-index" style={{ background: '#059669', color: '#ffffff', border: 'none' }}>原卷第 {previewItem.origIndex} 题</span>
+                <span className="badge badge-orig-index" style={{ background: '#059669', color: '#ffffff', border: 'none', fontSize: '0.92rem' }}>第 {previewItem.origIndex} 题</span>
                 <span className="badge badge-mock" style={{ background: '#38bdf8', color: '#0f172a' }}>{previewItem.year}</span>
                 <span className="badge badge-real">{previewItem.examCategory}</span>
                 <span className="badge badge-mock">{previewItem.district}</span>

@@ -206,10 +206,10 @@ body {
 }
 
 .badge-orig-index {
-  background: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
-  font-weight: 700;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1.5px solid #86efac;
+  font-weight: 800;
 }
 
 .exam-actions {
