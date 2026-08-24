@@ -222,6 +222,7 @@ export function App() {
   const [viewingExam, setViewingExam] = useState<Exam | null>(null);
   const [modalShowPassages, setModalShowPassages] = useState<boolean>(true);
   const [modalShowAnswers, setModalShowAnswers] = useState<boolean>(true);
+  const [showShejieQrModal, setShowShejieQrModal] = useState<boolean>(false);
 
   // Side-by-Side Comparison State
   const [leftExam, setLeftExam] = useState<Exam | null>(null);
@@ -1031,13 +1032,60 @@ export function App() {
         )}
 
         {/* 👩‍🏫 舌姐右下角悬浮 IP 备考助教 Widget */}
-        <div className="shejie-floating-widget no-print" onClick={() => setActiveTab('catalog')} title="舌姐中考备考智库">
+        <div className="shejie-floating-widget no-print" onClick={() => setShowShejieQrModal(true)} title="点击关注舌姐小红书">
           <img src="/images/shejie_avatar.jpg" className="shejie-floating-avatar" alt="舌姐" />
           <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>
             <div style={{ color: '#38bdf8', fontSize: '0.72rem', lineHeight: 1.1 }}>舌姐在线</div>
             <div>备考指导 💡</div>
           </div>
         </div>
+
+        {/* 👩‍🏫 舌姐小红书关注二维码弹窗 */}
+        {showShejieQrModal && (
+          <div className="q-preview-modal-overlay no-print" onClick={() => setShowShejieQrModal(false)}>
+            <div
+              className="q-preview-modal-content"
+              onClick={e => e.stopPropagation()}
+              style={{ maxWidth: '420px', textAlign: 'center', padding: '1.75rem' }}
+            >
+              {/* Modal Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div style={{ fontWeight: 800, fontSize: '1.15rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span>👩‍🏫 关注舌姐小红书 • 备考指导</span>
+                </div>
+                <button
+                  onClick={() => setShowShejieQrModal(false)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.2rem', color: '#64748b' }}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* QR Image Box */}
+              <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'inline-block', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', marginBottom: '1rem' }}>
+                <img
+                  src="/images/shejie_avatar.jpg"
+                  alt="舌姐小红书二维码"
+                  style={{ width: '240px', height: '240px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #38bdf8' }}
+                />
+              </div>
+
+              {/* Description & Tips */}
+              <div style={{ color: '#334155', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+                扫码关注<strong>舌姐小红书</strong>，获取青岛中考语文切片解析、命题趋势与备考独家指南。
+              </div>
+
+              {/* Action Footer */}
+              <button
+                className="action-btn action-btn-primary"
+                onClick={() => setShowShejieQrModal(false)}
+                style={{ width: '100%', padding: '0.65rem 0', fontSize: '0.95rem', borderRadius: '8px' }}
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
