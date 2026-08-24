@@ -347,7 +347,7 @@ export function App() {
       {/* Top Navbar */}
       <header className="app-header no-print">
         <div className="header-container">
-          <div className="logo-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="logo-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }} onClick={() => setShowShejieQrModal(true)} title="点击关注舌姐小红书">
             <img src="/images/shejie_avatar.jpg" className="shejie-avatar-ring" alt="舌姐" />
             <div>
               <span style={{ fontSize: '1.25rem', fontWeight: 800 }}>舌姐中文</span>
@@ -409,7 +409,7 @@ export function App() {
             </div>
 
             {/* 👩‍🏫 舌姐品牌 IP 形象展示卡片 */}
-            <div className="shejie-hero-card" style={{ flexShrink: 0 }}>
+            <div className="shejie-hero-card" style={{ flexShrink: 0, cursor: 'pointer' }} onClick={() => setShowShejieQrModal(true)} title="点击关注舌姐小红书">
               <img src="/images/shejie_avatar.jpg" className="shejie-hero-avatar" alt="舌姐中考语文" />
               <div>
                 <div className="shejie-badge" style={{ marginBottom: '0.35rem' }}>
@@ -1064,8 +1064,8 @@ export function App() {
               {/* QR Image Box */}
               <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'inline-block', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', marginBottom: '1rem' }}>
                 <img
-                  src="/images/shejie_avatar.jpg"
-                  alt="舌姐小红书"
+                  src="/images/shejie_qr.jpg"
+                  alt="舌姐小红书二维码"
                   style={{ width: '260px', height: 'auto', maxHeight: '340px', objectFit: 'contain', borderRadius: '12px', border: '2px solid #38bdf8' }}
                 />
               </div>
