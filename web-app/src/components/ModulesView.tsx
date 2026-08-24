@@ -557,6 +557,8 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
           {categorizedQuestions.map((item, idx) => {
             const { qKey, examCategory, year, district, question: q } = item;
             const isChecked = selectedQKeys.has(qKey);
+            const userChoice = userSelectedOpts[qKey];
+            const isAnswerShow = mode === 'teacher' || expandedAnswers[qKey];
             const isHighlighted = highlightedQKey === qKey;
 
             return (
@@ -598,10 +600,80 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                   <div className="grid-card-snippet" title={cleanStem(q.stem)}>
                     {getSnippet(q.stem, 90)}
                   </div>
+
+                  {/* Grid Card Options Stream (Supporting Student Self-Test & Teacher Mode) */}
+                  {q.options && q.options.length > 0 && (
+                    <div className="options-list" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.4rem', margin: '0.6rem 0' }}>
+                      {q.options.map((opt, optIdx) => {
+                        const letter = String.fromCharCode(65 + optIdx);
+                        const isUserSelected = userChoice === letter;
+                        const isCorrect = q.answer.trim().toUpperCase().includes(letter);
+
+                        return (
+                          <div
+                            key={optIdx}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (mode === 'student') {
+                                handleStudentSelectOption(qKey, letter);
+                              }
+                            }}
+                            className={`option-item ${isUserSelected ? (isCorrect ? 'correct' : 'wrong') : ''}`}
+                            style={{ padding: '0.4rem 0.65rem', fontSize: '0.88rem', cursor: mode === 'student' ? 'pointer' : 'default' }}
+                          >
+                            <span dangerouslySetInnerHTML={{ __html: opt }} />
+                            {mode === 'student' && isUserSelected && (
+                              <span>
+                                {isCorrect ? (
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-600 inline ml-2" />
+                                ) : (
+                                  <XCircle className="w-4 h-4 text-rose-600 inline ml-2" />
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Toggle Answer Button in Student Mode for Grid Card */}
+                  {mode === 'student' && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.4rem' }}>
+                      <button
+                        className="action-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleExpandAnswer(qKey);
+                        }}
+                        style={{ color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff', fontSize: '0.78rem', padding: '0.25rem 0.5rem' }}
+                      >
+                        {isAnswerShow ? (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5" /> 隐藏答案解析
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-3.5 h-3.5" /> 展开答案解析
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Answer Box in Grid Card */}
+                  {isAnswerShow && (
+                    <div className="answer-box" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '0.75rem', marginTop: '0.65rem', fontSize: '0.88rem' }}>
+                      <div style={{ fontWeight: 700, color: '#166534', fontSize: '0.85rem', marginBottom: '0.25rem' }}>🎯 【参考答案】</div>
+                      <div style={{ color: '#14532d', fontSize: '0.88rem', lineHeight: '1.5' }} dangerouslySetInnerHTML={{ __html: q.answer }} />
+                      <div style={{ fontWeight: 700, color: '#166534', fontSize: '0.85rem', marginTop: '0.6rem', marginBottom: '0.25rem' }}>💡 【详细解析】</div>
+                      <div style={{ color: '#14532d', fontSize: '0.88rem', lineHeight: '1.5' }} dangerouslySetInnerHTML={{ __html: q.analysis }} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Footer Actions */}
-                <div className="grid-card-footer">
+                <div className="grid-card-footer" style={{ marginTop: '0.75rem' }}>
                   <button
                     className={`action-btn ${isChecked ? 'action-btn-primary' : ''}`}
                     onClick={() => handleToggleSelectQ(qKey)}
