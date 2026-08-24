@@ -415,10 +415,10 @@ export function App() {
                   <span>👩‍🏫 舌姐 • 备考智库主理人</span>
                 </div>
                 <div style={{ fontSize: '0.9rem', color: '#f1f5f9', fontStyle: 'italic', fontWeight: 500, maxWidth: '280px', lineHeight: 1.45, marginTop: '0.2rem' }}>
-                  “做有温度、有深度的中考语文教研 — 8年真题全要素切片与智能组卷”
+                  “做有温度、有深度的中考语文教研 — 真题全要素切片与智能组卷”
                 </div>
                 <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.6rem', fontSize: '0.75rem', color: '#38bdf8' }}>
-                  <span>✨ 8年真题精解</span>
+                  <span>✨ 真题精解</span>
                   <span>•</span>
                   <span>🎯 命题切片</span>
                   <span>•</span>
