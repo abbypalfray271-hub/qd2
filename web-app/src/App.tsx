@@ -349,8 +349,10 @@ export function App() {
         <div className="header-container">
           <div className="logo-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }} onClick={() => setShowShejieQrModal(true)} title="点击关注舌姐小红书">
             <img src="/images/shejie_avatar.jpg" className="shejie-avatar-ring" alt="舌姐" />
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'nowrap' }}>
               <span style={{ fontSize: '1.25rem', fontWeight: 800 }}>舌姐中文</span>
+              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24' }}>.</span>
+              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24' }}>青岛中考语文真题库</span>
             </div>
           </div>
 
@@ -400,9 +402,6 @@ export function App() {
         {activeTab === 'catalog' && (
           <div className="hero-banner no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
             <div style={{ position: 'relative', zIndex: 2, flex: 1, minWidth: '320px' }}>
-              <div style={{ color: '#fbbf24', fontWeight: 800, fontSize: '1.5rem', marginBottom: '0.85rem', letterSpacing: '0.5px' }}>
-                青岛中考语文真题库
-              </div>
               <p style={{ color: '#e2e8f0', fontSize: '1.25rem', fontWeight: 500, maxWidth: '750px', lineHeight: 1.7 }}>
                 已全量收录青岛市 2018~2025 年正式真题及市南、市北、李沧、崂山、城阳、即墨、黄岛、平度、莱西 35 套区县一模二模解析试卷（共 {examsData.length} 套）。
               </p>
