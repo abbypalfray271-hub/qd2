@@ -2,7 +2,6 @@ import { CartView } from './components/CartView';
 import { ModulesView } from './components/ModulesView';
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  BookOpen, 
   Columns, 
   Layers, 
   ShoppingCart, 
@@ -18,7 +17,9 @@ import {
   Bookmark,
   Eye,
   CheckSquare,
-  Square
+  Square,
+  Lock,
+  LogOut
 } from 'lucide-react';
 import type { Exam, ActiveTab } from './types';
 import { cleanStem } from './utils';
@@ -227,10 +228,24 @@ export function App() {
   const [leftExam, setLeftExam] = useState<Exam | null>(null);
   const [rightExam, setRightExam] = useState<Exam | null>(null);
 
-  // Admin Drag & Drop Upload State
+  // Admin Drag & Drop Upload & Authentication State
+  const [isAdminAuthorized, setIsAdminAuthorized] = useState<boolean>(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState<string>('');
+  const [adminAuthError, setAdminAuthError] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
+
+  const handleUnlockAdmin = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (adminPasswordInput === '2721') {
+      setIsAdminAuthorized(true);
+      setAdminAuthError(false);
+      setAdminPasswordInput('');
+    } else {
+      setAdminAuthError(true);
+    }
+  };
 
   // Unique Filter Options
   const years = ['全部', '2025年', '2024年', '2023年', '2022年', '2021年', '2020年', '2019年', '2018年'];
@@ -279,6 +294,20 @@ export function App() {
     });
   }, [examsData, selectedCategory, selectedYears, selectedDistricts, searchQuery]);
 
+  // 标志位：首次初始化加载时跳过筛选清空逻辑
+  const isInitialFilterMount = React.useRef(true);
+
+  // 核心逻辑：只要【1区】筛选条件（分类、年份、区县、搜索词）改变，【2区】的已选对比勾选状态自动恢复默认值（清空残留）
+  useEffect(() => {
+    if (isInitialFilterMount.current) {
+      isInitialFilterMount.current = false;
+      return;
+    }
+    // 恢复 2 区卡片上的“已选对比”状态为默认初始值 (清空旧筛选条件下的选中残留)
+    setLeftExam(null);
+    setRightExam(null);
+  }, [selectedCategory, selectedYears, selectedDistricts, searchQuery]);
+
 // handlePrint function removed for CartView
 
   const handleDrop = (e: React.DragEvent) => {
@@ -318,9 +347,11 @@ export function App() {
       {/* Top Navbar */}
       <header className="app-header no-print">
         <div className="header-container">
-          <div className="logo-group">
-            <BookOpen className="w-6 h-6 text-sky-400" />
-            <span>🌊 青岛中考语文智慧云平台</span>
+          <div className="logo-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <img src="/images/shejie_avatar.jpg" className="shejie-avatar-ring" alt="舌姐" />
+            <div>
+              <span style={{ fontSize: '1.25rem', fontWeight: 800 }}>舌姐中考语文真题云平台</span>
+            </div>
           </div>
 
           <nav className="nav-tabs">
@@ -367,17 +398,34 @@ export function App() {
       <main className="main-content">
         {/* Banner */}
         {activeTab === 'catalog' && (
-          <div className="hero-banner no-print">
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#38bdf8', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                <Sparkles className="w-4 h-4" /> 独家青岛中考语文备考智库
+          <div className="hero-banner no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', zIndex: 2, flex: 1, minWidth: '320px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#38bdf8', fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.85rem' }}>
+                <Sparkles className="w-4 h-4" /> 独家青岛中考语文真题库
               </div>
-              <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.75rem', background: 'linear-gradient(to right, #fff, #cbd5e1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                面向老师与家长的“看、比、练、印”一站式赋能平台
-              </h1>
-              <p style={{ color: '#94a3b8', fontSize: '1rem', maxWidth: '800px' }}>
+              <p style={{ color: '#e2e8f0', fontSize: '1.25rem', fontWeight: 500, maxWidth: '750px', lineHeight: 1.7 }}>
                 已全量收录青岛市 2018~2025 年正式真题及市南、市北、李沧、崂山、城阳、即墨、黄岛、平度、莱西 35 套区县一模二模解析试卷（共 {examsData.length} 套）。
               </p>
+            </div>
+
+            {/* 👩‍🏫 舌姐品牌 IP 形象展示卡片 */}
+            <div className="shejie-hero-card" style={{ flexShrink: 0 }}>
+              <img src="/images/shejie_avatar.jpg" className="shejie-hero-avatar" alt="舌姐中考语文" />
+              <div>
+                <div className="shejie-badge" style={{ marginBottom: '0.35rem' }}>
+                  <span>👩‍🏫 舌姐 • 备考智库主理人</span>
+                </div>
+                <div style={{ fontSize: '0.9rem', color: '#f1f5f9', fontStyle: 'italic', fontWeight: 500, maxWidth: '280px', lineHeight: 1.45, marginTop: '0.2rem' }}>
+                  “做有温度、有深度的中考语文教研 — 8年真题全要素切片与智能组卷”
+                </div>
+                <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.6rem', fontSize: '0.75rem', color: '#38bdf8' }}>
+                  <span>✨ 8年真题精解</span>
+                  <span>•</span>
+                  <span>🎯 命题切片</span>
+                  <span>•</span>
+                  <span>🖨️ 智能组卷</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -733,55 +781,128 @@ export function App() {
           />
         )}
 
-                {/* TAB 4: Admin Drag & Drop Portal */}
+                {/* TAB 4: Admin Drag & Drop Portal (Password Protected) */}
         {activeTab === 'admin' && (
           <div className="no-print">
-            <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <UploadCloud className="w-5 h-5 text-sky-500" /> 管理员试卷一键拖拽上传控制中心
-              </h2>
-              <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
-                无需触碰命令行！在下方拖拽上传新试卷 Word (.docx)，后台 API 将全自动进行切片提取、生成全要素 JSON 数据库。
-              </p>
-            </div>
+            {!isAdminAuthorized ? (
+              /* 🔐 极简隐蔽版管理员验证卡片 */
+              <div style={{ minHeight: '380px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <form 
+                  onSubmit={handleUnlockAdmin}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '16px',
+                    padding: '2.5rem 2rem',
+                    width: '100%',
+                    maxWidth: '360px',
+                    textAlign: 'center',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)'
+                  }}
+                >
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f0f9ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', border: '1px solid #bae6fd' }}>
+                    <Lock className="w-5 h-5 text-sky-600" />
+                  </div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1.25rem' }}>
+                    管理员验证
+                  </h3>
 
-            <div 
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              style={{
-                border: `2px dashed ${isDragging ? '#0284c7' : '#cbd5e1'}`,
-                background: isDragging ? '#e0f2fe' : '#fff',
-                borderRadius: '16px',
-                padding: '4rem 2rem',
-                textAlign: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <UploadCloud style={{ width: '64px', height: '64px', color: '#0284c7', margin: '0 auto 1rem' }} />
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-                点击或拖拽上传新试卷 Word (.docx) 文档
-              </h3>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                支持青岛中考真题及市南、市北、李沧、崂山、城阳、即墨、黄岛、平度、莱西等区县一模二模试卷
-              </p>
-              <button className="action-btn action-btn-primary" style={{ display: 'inline-flex', width: 'auto', padding: '0.65rem 2rem' }}>
-                选择本地文件
-              </button>
-            </div>
-
-            {uploadSuccess && (
-              <div style={{ marginTop: '1.5rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <CheckCircle2 style={{ width: '32px', height: '32px', color: '#16a34a' }} />
-                <div>
-                  <h4 style={{ fontWeight: 700, color: '#166534', fontSize: '1.05rem' }}>
-                    🎉 预检成功！已成功识别: {uploadedFileName}
-                  </h4>
-                  <p style={{ color: '#15803d', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-                    提取出 23 道小题 | 识别分类: 青岛区县模拟 | 自动建立了全要素 JSON 数据库，已在线更新上线全站！
-                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <input 
+                      type="password"
+                      placeholder="请输入管理员密码"
+                      value={adminPasswordInput}
+                      onChange={(e) => { setAdminPasswordInput(e.target.value); setAdminAuthError(false); }}
+                      style={{
+                        width: '100%',
+                        padding: '0.65rem 1rem',
+                        borderRadius: '8px',
+                        border: `1px solid ${adminAuthError ? '#ef4444' : '#cbd5e1'}`,
+                        fontSize: '0.9rem',
+                        outline: 'none',
+                        transition: 'border-color 0.2s ease'
+                      }}
+                    />
+                    {adminAuthError && (
+                      <div style={{ color: '#ef4444', fontSize: '0.8rem', textAlign: 'left', fontWeight: 500 }}>
+                        密码错误，请重新输入
+                      </div>
+                    )}
+                    <button 
+                      type="submit"
+                      className="action-btn action-btn-primary"
+                      style={{ padding: '0.65rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}
+                    >
+                      确认解锁 →
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              /* 🟢 已授权管理员控制面板 */
+              <div>
+                <div style={{ background: '#fff', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a' }}>
+                      <UploadCloud className="w-5 h-5 text-sky-500" /> 管理员试卷一键拖拽上传控制中心
+                    </h2>
+                    <p style={{ color: '#64748b', fontSize: '0.88rem', marginTop: '0.2rem' }}>
+                      在下方拖拽上传新试卷 Word (.docx)，后台 API 将全自动进行切片提取、生成全要素 JSON 数据库。
+                    </p>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#059669', background: '#d1fae5', padding: '0.3rem 0.75rem', borderRadius: '20px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                      🟢 已通过管理员认证
+                    </span>
+                    <button 
+                      onClick={() => setIsAdminAuthorized(false)}
+                      style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '0.35rem 0.85rem', borderRadius: '8px', fontSize: '0.82rem', cursor: 'pointer', color: '#475569', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 500 }}
+                    >
+                      <LogOut className="w-3.5 h-3.5" /> 锁定退出
+                    </button>
+                  </div>
                 </div>
+
+                <div 
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={handleDrop}
+                  style={{
+                    border: `2px dashed ${isDragging ? '#0284c7' : '#cbd5e1'}`,
+                    background: isDragging ? '#e0f2fe' : '#fff',
+                    borderRadius: '16px',
+                    padding: '4rem 2rem',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <UploadCloud style={{ width: '64px', height: '64px', color: '#0284c7', margin: '0 auto 1rem' }} />
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+                    点击或拖拽上传新试卷 Word (.docx) 文档
+                  </h3>
+                  <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                    支持青岛中考真题及市南、市北、李沧、崂山、城阳、即墨、黄岛、平度、莱西等区县一模二模试卷
+                  </p>
+                  <button className="action-btn action-btn-primary" style={{ display: 'inline-flex', width: 'auto', padding: '0.65rem 2rem' }}>
+                    选择本地文件
+                  </button>
+                </div>
+
+                {uploadSuccess && (
+                  <div style={{ marginTop: '1.5rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <CheckCircle2 style={{ width: '32px', height: '32px', color: '#16a34a' }} />
+                    <div>
+                      <h4 style={{ fontWeight: 700, color: '#166534', fontSize: '1.05rem' }}>
+                        🎉 预检成功！已成功识别: {uploadedFileName}
+                      </h4>
+                      <p style={{ color: '#15803d', fontSize: '0.85rem', marginTop: '0.2rem' }}>
+                        提取出 23 道小题 | 识别分类: 青岛区县模拟 | 自动建立了全要素 JSON 数据库，已在线更新上线全站！
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -793,8 +914,14 @@ export function App() {
             <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '900px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
               <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                  <h3 style={{ fontWeight: 700, fontSize: '1.1rem' }}>{viewingExam.title}</h3>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.2rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                    <h3 style={{ fontWeight: 700, fontSize: '1.1rem' }}>{viewingExam.title}</h3>
+                    <span className="shejie-badge" style={{ fontSize: '0.75rem', padding: '0.15rem 0.6rem' }}>
+                      <img src="/images/shejie_avatar.jpg" alt="舌姐" />
+                      <span>舌姐名师精解版</span>
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
                     {viewingExam.category} • {viewingExam.year} • {viewingExam.district}
                   </div>
                 </div>
@@ -887,6 +1014,10 @@ export function App() {
                         )}
                         {modalShowAnswers && (q.answer || q.analysis) && (
                           <div className="answer-box">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.3rem', color: '#047857', fontWeight: 700, fontSize: '0.88rem' }}>
+                              <img src="/images/shejie_avatar.jpg" style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1px solid #10b981' }} alt="舌姐" />
+                              <span>舌姐独家答案与解构</span>
+                            </div>
                             {q.answer && <div><strong>【答案】</strong>: <RichContent content={q.answer} /></div>}
                             {q.analysis && <div style={{ marginTop: '0.4rem' }}><strong>【解析】</strong>: <RichContent content={q.analysis} /></div>}
                           </div>
@@ -899,6 +1030,15 @@ export function App() {
             </div>
           </div>
         )}
+
+        {/* 👩‍🏫 舌姐右下角悬浮 IP 备考助教 Widget */}
+        <div className="shejie-floating-widget no-print" onClick={() => setActiveTab('catalog')} title="舌姐中考备考智库">
+          <img src="/images/shejie_avatar.jpg" className="shejie-floating-avatar" alt="舌姐" />
+          <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>
+            <div style={{ color: '#38bdf8', fontSize: '0.72rem', lineHeight: 1.1 }}>舌姐在线</div>
+            <div>备考指导 💡</div>
+          </div>
+        </div>
       </main>
     </div>
   );
