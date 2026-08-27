@@ -740,7 +740,7 @@
         "options": [
           "A. 濒（bīn）",
           "B. 饶（ráo）",
-          "C. 哺（fǔ） ➔ 错，应读 bǔ",
+          "C. 哺（fǔ）",
           "D. 挠（náo）"
         ],
         "answer": "C",
@@ -755,7 +755,7 @@
         "stem": "2. 文段中四个画线词语，书写不正确的一项是（2分）（   ）",
         "passage": "【阅读材料一·语段基础与词语运用】\n我的家乡<span class=\"dot-char\">濒</span>（bīn）临大海。那里风景如画，<u class=\"underline\">美不盛收</u>。那片丰<span class=\"dot-char\">饶</span>（ráo）的土地，<span class=\"dot-char\">哺</span>（fǔ）育代代乡民；那群勤劳的乡民，<u class=\"underline\">开垦</u>片片沃土。他们仰望<u class=\"underline\">星辰</u>，心怀梦想；他们不折不<span class=\"dot-char\">挠</span>（náo），坚守故土。每当想起家乡，心中便涌起<u class=\"underline\">挚爱</u>；每当念及故里，胸中便满溢眷恋。",
         "options": [
-          "A. 美不盛收 ➔ 错，应为 美不胜收",
+          "A. 美不盛收",
           "B. 开垦",
           "C. 星辰",
           "D. 挚爱"
@@ -770,15 +770,15 @@
         "section_title": "一、积累与运用",
         "group_title": "【语段基础与排比仿写】",
         "stem": "3. 下面文段中，加点成语使用不恰当的一项是（2分）（   ）",
-        "passage": "【阅读材料二·成语、病句与排比仿写】\n青岛的海洋文化资源丰富，海洋科技实力雄厚。蛟龙号潜水器深潜大洋，大国重器<span class=\"dot-char\">名</span><span class=\"dot-char\">扬</span><span class=\"dot-char\">四</span><span class=\"dot-char\">海</span>；青岛港自动化码头高效运转，科技创新<span class=\"dot-char\">源</span><span class=\"dot-char\">远</span><span class=\"dot-char\">流</span><span class=\"dot-char\">长</span>。在海洋强国建设的浪潮中，我们更需<span class=\"dot-char\">推</span><span class=\"dot-char\">陈</span><span class=\"dot-char\">出</span><span class=\"dot-char\">新</span>，让海洋经济焕发绚丽色彩。\n\n<u class=\"underline\">【A】通过开展“海洋文化进校园”活动，使广大学生的海洋保护意识得到了显著提高。</u>【B】在诵读海洋诗篇的过程中，【C】不仅我们能领略大海的壮丽风姿，还能感悟生命的豪情。【D】海洋文化是青岛独特的文化名片，我们应当倍加珍惜并传承发扬。\n\n阅读经典，如同开启一场灵魂的对话。<u style=\"text-decoration: wavy;\">似一缕清风，抚慰我们疲惫的心灵</u>；似一抹阳光，照亮我们前行的道路；________________，________________。",
+        "passage": "【阅读材料二·成语运用（即墨风物）】\n走在即墨这片古老而充满活力的土地上，一种自豪感<span class=\"dot-char\">油</span><span class=\"dot-char\">然</span><span class=\"dot-char\">而</span><span class=\"dot-char\">生</span>。这里有独特的景观。马山巍峨耸立，令人<span class=\"dot-char\">见</span><span class=\"dot-char\">异</span><span class=\"dot-char\">思</span><span class=\"dot-char\">迁</span>，感叹大自然的鬼斧神工。古城仿佛一位<span class=\"dot-char\">神</span><span class=\"dot-char\">采</span><span class=\"dot-char\">奕</span><span class=\"dot-char\">奕</span>的老人，用砖石诉说着往昔的辉煌与沧桑。田横岛碧海蓝天间，英雄的故事激励后人<span class=\"dot-char\">锲</span><span class=\"dot-char\">而</span><span class=\"dot-char\">不</span><span class=\"dot-char\">舍</span>地追求理想与自由。",
         "options": [
-          "A. 名扬四海",
-          "B. 源远流长",
-          "C. 推陈出新",
-          "D. 茫茫大海"
+          "A. 油然而生",
+          "B. 见异思迁",
+          "C. 神采奕奕",
+          "D. 锲而不舍"
         ],
         "answer": "B",
-        "analysis": "【答案】 B\n【解析】 本题考查成语使用。B项“源远流长”常用来形容历史文化、传统悠久，不能用来形容科技创新。故选B。",
+        "analysis": "【答案】 B\n【解析】 本题考查成语使用。B项“见异思迁”指看见别的事物就想改变原来的主意，指意志不坚定。此处用来形容人们看到马山巍峨耸立的感受，不合语境，使用不恰当。故选B。",
         "score": 2
       },
       {
@@ -787,15 +787,15 @@
         "section_title": "一、积累与运用",
         "group_title": "【语段基础与排比仿写】",
         "stem": "4. 下面文段中画线的句子，有语病的一项是（2分）（   ）",
-        "passage": "【阅读材料二·成语、病句与排比仿写】\n青岛的海洋文化资源丰富，海洋科技实力雄厚。蛟龙号潜水器深潜大洋，大国重器<span class=\"dot-char\">名</span><span class=\"dot-char\">扬</span><span class=\"dot-char\">四</span><span class=\"dot-char\">海</span>；青岛港自动化码头高效运转，科技创新<span class=\"dot-char\">源</span><span class=\"dot-char\">远</span><span class=\"dot-char\">流</span><span class=\"dot-char\">长</span>。在海洋强国建设的浪潮中，我们更需<span class=\"dot-char\">推</span><span class=\"dot-char\">陈</span><span class=\"dot-char\">出</span><span class=\"dot-char\">新</span>，让海洋经济焕发绚丽色彩。\n\n<u class=\"underline\">【A】通过开展“海洋文化进校园”活动，使广大学生的海洋保护意识得到了显著提高。</u>【B】在诵读海洋诗篇的过程中，【C】不仅我们能领略大海的壮丽风姿，还能感悟生命的豪情。【D】海洋文化是青岛独特的文化名片，我们应当倍加珍惜并传承发扬。\n\n阅读经典，如同开启一场灵魂的对话。<u style=\"text-decoration: wavy;\">似一缕清风，抚慰我们疲惫的心灵</u>；似一抹阳光，照亮我们前行的道路；________________，________________。",
+        "passage": "【阅读材料三·病句辨析（即墨文化）】\n<u class=\"underline\">【A】作为即墨文化的一张闪亮的名片，即墨老酒有着悠久的历史。</u><u class=\"underline\">【B】它以醇厚的口感和浓郁的香气而闻名，是中国黄酒中的珍品。</u><u class=\"underline\">【C】即墨老酒品质优良，靠的是独特的酿造工艺和优质的原料造就的。</u><u class=\"underline\">【D】柳腔是即墨地方戏曲的瑰宝，展现即墨人民的生活情感与艺术智慧。</u>此外，田横祭海节等文化遗产，也彰显了即墨深厚的历史底蕴和独特的地域风情。",
         "options": [
           "A. 【A】句",
           "B. 【B】句",
           "C. 【C】句",
           "D. 【D】句"
         ],
-        "answer": "A",
-        "analysis": "【答案】 A\n【解析】 本题考查病句辨析。A句“通过……使……”滥用介词导致主语缺失，应删去“通过”或“使”。故选A。",
+        "answer": "C",
+        "analysis": "【答案】 C\n【解析】 本题考查病句辨析。C句“靠的是独特的酿造工艺和优质的原料造就的”句式杂糅，“靠的是……”与“是……造就的”杂糅在一起。故选C。",
         "score": 2
       },
       {
@@ -804,7 +804,7 @@
         "section_title": "一、积累与运用",
         "group_title": "【语段基础与排比仿写】",
         "stem": "5. 请仿照画波浪线的部分，在横线处补写一个句子，使之与上下文构成语意连贯的排比句（4分）。",
-        "passage": "【阅读材料二·成语、病句与排比仿写】\n青岛的海洋文化资源丰富，海洋科技实力雄厚。蛟龙号潜水器深潜大洋，大国重器<span class=\"dot-char\">名</span><span class=\"dot-char\">扬</span><span class=\"dot-char\">四</span><span class=\"dot-char\">海</span>；青岛港自动化码头高效运转，科技创新<span class=\"dot-char\">源</span><span class=\"dot-char\">远</span><span class=\"dot-char\">流</span><span class=\"dot-char\">长</span>。在海洋强国建设的浪潮中，我们更需<span class=\"dot-char\">推</span><span class=\"dot-char\">陈</span><span class=\"dot-char\">出</span><span class=\"dot-char\">新</span>，让海洋经济焕发绚丽色彩。\n\n<u class=\"underline\">【A】通过开展“海洋文化进校园”活动，使广大学生的海洋保护意识得到了显著提高。</u>【B】在诵读海洋诗篇的过程中，【C】不仅我们能领略大海的壮丽风姿，还能感悟生命的豪情。【D】海洋文化是青岛独特的文化名片，我们应当倍加珍惜并传承发扬。\n\n阅读经典，如同开启一场灵魂的对话。<u style=\"text-decoration: wavy;\">似一缕清风，抚慰我们疲惫的心灵</u>；似一抹阳光，照亮我们前行的道路；________________，________________。",
+        "passage": "【阅读材料四·排比仿写（故乡岁月）】\n故乡生活的点点滴滴都让我难忘。<u style=\"text-decoration: wavy;\">灶台上升起的缕缕炊烟，裹着晚饭温热的香气；</u>________________________________________；夏夜中闪烁的点点萤光，照亮儿时酣甜的梦乡。无论走多远，故乡始终是心底最温暖的印记。",
         "options": [],
         "answer": "示例：似一甘霖，滋润我们干涸的心田（或：似一首乐章，振奋我们沉睡的精神）。",
         "analysis": "【答案】 句式结构“似一……，……我们……的……”符合排比与语意连贯得满分。\n【解析】 考查句式仿写与排比比喻修辞。",
@@ -890,7 +890,7 @@
         "options": [
           "A. 少好学（少：年轻时）",
           "B. 不乐富贵（乐：以……为乐）",
-          "C. 君主当进贤（进：前进 ➔ 错，应为举荐/起用）",
+          "C. 君主当进贤（进：前进）",
           "D. 规深然其言（然：认为……对）"
         ],
         "answer": "C",
