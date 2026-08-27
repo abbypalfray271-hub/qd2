@@ -978,22 +978,55 @@ export function App() {
               </div>
 
               <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
-                {viewingExam.questions.map((q, idx) => {
-                  const showSectionHeader = idx === 0 || q.section_title !== viewingExam.questions[idx - 1].section_title;
-                  const showGroupHeader = idx === 0 || q.group_title !== viewingExam.questions[idx - 1].group_title;
+                {(() => {
+                  const secScores: Record<string, number> = {};
+                  const grpScores: Record<string, number> = {};
+                  viewingExam.questions.forEach(q => {
+                    const scoreNum = Number(q.score) || 0;
+                    if (q.section_title) {
+                      secScores[q.section_title] = (secScores[q.section_title] || 0) + scoreNum;
+                    }
+                    if (q.group_title) {
+                      grpScores[q.group_title] = (grpScores[q.group_title] || 0) + scoreNum;
+                    }
+                  });
 
-                  return (
-                    <React.Fragment key={q.id}>
-                      {showSectionHeader && q.section_title && (
-                        <div style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: '#fff', padding: '0.75rem 1.25rem', borderRadius: '10px', fontWeight: 700, fontSize: '1rem', margin: '1.5rem 0 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-                          <Bookmark className="w-5 h-5 text-sky-400" /> <RichContent content={q.section_title} />
-                        </div>
-                      )}
-                      {showGroupHeader && q.group_title && (
-                        <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.45rem 0.9rem', borderRadius: '6px', fontWeight: 600, fontSize: '0.9rem', margin: '0.85rem 0', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                          📌 <RichContent content={q.group_title} />
-                        </div>
-                      )}
+                  // 写作模块为二选一选做题，分值上限固定为 50 分
+                  Object.keys(secScores).forEach(k => {
+                    if (k.includes('写作') && secScores[k] > 50) {
+                      secScores[k] = 50;
+                    }
+                  });
+                  Object.keys(grpScores).forEach(k => {
+                    if (k.includes('写作') && grpScores[k] > 50) {
+                      grpScores[k] = 50;
+                    }
+                  });
+
+                  return viewingExam.questions.map((q, idx) => {
+                    const showSectionHeader = idx === 0 || q.section_title !== viewingExam.questions[idx - 1].section_title;
+                    const showGroupHeader = idx === 0 || q.group_title !== viewingExam.questions[idx - 1].group_title;
+
+                    const secScoreText = q.section_title && !q.section_title.includes('分') && secScores[q.section_title]
+                      ? `${q.section_title}（${secScores[q.section_title]}分）`
+                      : q.section_title;
+
+                    const grpScoreText = q.group_title && !q.group_title.includes('分') && grpScores[q.group_title]
+                      ? `${q.group_title}（${grpScores[q.group_title]}分）`
+                      : q.group_title;
+
+                    return (
+                      <React.Fragment key={q.id}>
+                        {showSectionHeader && q.section_title && (
+                          <div style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: '#fff', padding: '0.75rem 1.25rem', borderRadius: '10px', fontWeight: 700, fontSize: '1rem', margin: '1.5rem 0 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                            <Bookmark className="w-5 h-5 text-sky-400" /> <RichContent content={secScoreText} />
+                          </div>
+                        )}
+                        {showGroupHeader && q.group_title && (
+                          <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.45rem 0.9rem', borderRadius: '6px', fontWeight: 600, fontSize: '0.9rem', margin: '0.85rem 0', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                            📌 <RichContent content={grpScoreText} />
+                          </div>
+                        )}
 
                       <div className="question-item">
                         {modalShowPassages && q.passage && <div className="passage-box"><RichContent content={q.passage} /></div>}
@@ -1016,7 +1049,8 @@ export function App() {
                       </div>
                     </React.Fragment>
                   );
-                })}
+                });
+              })()}
               </div>
             </div>
           </div>
