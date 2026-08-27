@@ -915,10 +915,6 @@ export function App() {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
                     <h3 style={{ fontWeight: 700, fontSize: '1.1rem' }}>{viewingExam.title}</h3>
-                    <span className="shejie-badge" style={{ fontSize: '0.75rem', padding: '0.15rem 0.6rem' }}>
-                      <img src="/images/shejie_avatar.jpg" alt="舌姐" />
-                      <span>舌姐名师精解版</span>
-                    </span>
                   </div>
                   <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
                     {viewingExam.category} • {viewingExam.year} • {viewingExam.district}
@@ -1013,10 +1009,6 @@ export function App() {
                         )}
                         {modalShowAnswers && (q.answer || q.analysis) && (
                           <div className="answer-box">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.3rem', color: '#047857', fontWeight: 700, fontSize: '0.88rem' }}>
-                              <img src="/images/shejie_avatar.jpg" style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1px solid #10b981' }} alt="舌姐" />
-                              <span>舌姐独家答案与解构</span>
-                            </div>
                             {q.answer && <div><strong>【答案】</strong>: <RichContent content={q.answer} /></div>}
                             {q.analysis && <div style={{ marginTop: '0.4rem' }}><strong>【解析】</strong>: <RichContent content={q.analysis} /></div>}
                           </div>
