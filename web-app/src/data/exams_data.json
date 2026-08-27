@@ -2319,16 +2319,16 @@
         "type": "single_choice",
         "section_title": "一、积累与运用",
         "group_title": "（二）专题讨论",
-        "stem": "5. 下列句子中，没有语病的一项是（2分）（   ）",
+        "stem": "5. 文段中的句子，有语病的一项是（2分）（   ）",
         "passage": "【阅读材料一·审校主持词】\n班级准备开展以“追寻”为主题的班会，请你参与并完成下列任务。\n\n亲爱的同学们，生命的琴弦需要“追寻”来拨动。像<u class=\"underline\">候鸟</u><u class=\"underline\">奔赴</u>暖春，像飞蛾扑向烈火，我们总得为某片星光启程——或许是<u class=\"underline\">斑谰</u>的诗篇，或许是<span class=\"dot-char\">绯</span>红的黎明。这些<span class=\"dot-char\">炽</span>热的向往，在时光里<span class=\"dot-char\">贮</span>蓄成冲破<u class=\"underline\">禁锢</u>的力量，在迷茫中<u class=\"underline\">幻化</u>为奔赴期待的清响。若人生无所追寻，那黄昏只是白昼的<u class=\"underline\">灰烬</u>，心跳只是遗憾的泪痕。生命最美的<u class=\"underline\">姿态</u>，是向着远方摇<span class=\"dot-char\">曳</span>的烛光伸出手掌。\n\n星光璀璨，当逐光而行。有人追寻家国无恙，如岳飞将军<span class=\"dot-char\">金</span><span class=\"dot-char\">戈</span><span class=\"dot-char\">铁</span><span class=\"dot-char\">马</span>，以热血捍卫江山社稷；①______________，②______________，③______________；有人追寻桃李芬芳，如张桂梅校长<span class=\"dot-char\">诲</span><span class=\"dot-char\">人</span><span class=\"dot-char\">不</span><span class=\"dot-char\">倦</span>，用知识改变学子命运；有人追寻璞玉成璧，如饺子导演<span class=\"dot-char\">精</span><span class=\"dot-char\">益</span><span class=\"dot-char\">求</span><span class=\"dot-char\">精</span>，让红绫点燃国漫苍穹。看窗外，天空中流云逐风，湖面上<span class=\"dot-char\">浮</span><span class=\"dot-char\">光</span><span class=\"dot-char\">掠</span><span class=\"dot-char\">影</span>……正值美好春光，我们当怀鸿鹄之志，与时代脉搏同频共振。\n\n【A】追梦的少年啊，不要困于方寸天地，你的眼眸要像晨露般折射时代的微光。\n【B】你的双脚要踏在知识的土壤上，将梦想的距离一步步丈量。\n【C】若风雨骤至，你要如青松，无时无刻都挺立着钢铁般的脊梁。\n【D】以视野为帆，以行动为桨，步履不停的你终会于岁月枝头轻嗅成功的芬芳。",
         "options": [
-          "A. 通过这次专题讨论，使同学们深刻体会到了名著人物的追寻精神。",
-          "B. 能否坚守心中的理想，是名著人物最终走向成功的关键。",
-          "C. 许多名著人物都以生命书写着对理想、正义或信仰的追寻。",
-          "D. 简·爱在平等与尊严中追求独立的人格，深受广大读者所喜爱。"
+          "A. 【A】",
+          "B. 【B】",
+          "C. 【C】",
+          "D. 【D】"
         ],
         "answer": "C",
-        "analysis": "【答案】 C\n【解析】 A项成分残缺，删去“通过”或“使”；B项两面与一面不搭配，删去“能否”；D项杂糅，“深受……喜爱”与“为……所喜爱”杂糅。故选C。",
+        "analysis": "【答案】 C\n【解析】 本题考查病句辨析。【C】句否定不当，“无时无刻”意为没有时刻，一般与“不”搭配使用，表示“时时刻刻都”的意思。在“无时无刻”后加上“不”，删除“都”。故选C。",
         "score": 2
       },
       {
