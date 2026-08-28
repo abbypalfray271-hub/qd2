@@ -5,9 +5,7 @@ import {
   Columns, 
   Layers, 
   ShoppingCart, 
-  UploadCloud, 
   Search, 
-  CheckCircle2, 
   FileText,
   Calendar,
   X,
@@ -16,9 +14,7 @@ import {
   Bookmark,
   Eye,
   CheckSquare,
-  Square,
-  Lock,
-  LogOut
+  Square
 } from 'lucide-react';
 import type { Exam, ActiveTab } from './types';
 import { cleanStem } from './utils';
@@ -227,30 +223,6 @@ export function App() {
   const [leftExam, setLeftExam] = useState<Exam | null>(null);
   const [rightExam, setRightExam] = useState<Exam | null>(null);
 
-  // Admin Drag & Drop Upload & Authentication State
-  const [isAdminAuthorized, setIsAdminAuthorized] = useState<boolean>(false);
-  const [adminPasswordInput, setAdminPasswordInput] = useState<string>('');
-  const [adminAuthError, setAdminAuthError] = useState<boolean>(false);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [uploadedFileName, setUploadedFileName] = useState<string>('');
-  const [uploadedFileType, setUploadedFileType] = useState<'docx' | 'pdf' | ''>('');
-  const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
-  const [uploadError, setUploadError] = useState<string>('');
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-
-  const handleUnlockAdmin = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (adminPasswordInput === '2721') {
-      setIsAdminAuthorized(true);
-      setAdminAuthError(false);
-      setAdminPasswordInput('');
-    } else {
-      setAdminAuthError(true);
-    }
-  };
-
-  const [newCreatedExam, setNewCreatedExam] = useState<Exam | null>(null);
-
   // Unique Filter Options
   const years = ['全部', '2026年', '2025年', '2024年', '2023年', '2022年', '2021年', '2020年', '2019年', '2018年'];
   const districts = ['全部', '青岛市级', '市南区', '市北区', '李沧区', '崂山区', '黄岛区', '城阳区', '即墨区', '平度市', '莱西市'];
@@ -322,78 +294,7 @@ export function App() {
     setRightExam(null);
   }, [selectedCategory, selectedYears, selectedDistricts, searchQuery]);
 
-// handlePrint function removed for CartView
 
-  const createUploadedExam = (file: File, _fileType: 'docx' | 'pdf'): Exam => {
-    const rawName = file.name.replace(/\.(docx|pdf)$/i, '');
-    let year = '2026年';
-    const yearMatch = rawName.match(/(20\d\d)年?/);
-    if (yearMatch) {
-      year = `${yearMatch[1]}年`;
-    }
-
-    let district = '黄岛区';
-    const distMatch = rawName.match(/(市南|市北|李沧|崂山|黄岛|西海岸|城阳|即墨|平度|莱西)/);
-    if (distMatch) {
-      const dName = distMatch[1];
-      if (dName === '西海岸' || dName === '黄岛') district = '黄岛区';
-      else if (dName.endsWith('市') || dName.endsWith('区')) district = dName;
-      else district = `${dName}区`;
-    } else if (rawName.includes('青岛市') || rawName.includes('统考')) {
-      district = '青岛市级';
-    }
-
-    const category = rawName.includes('真题') ? '正式真题' : '区县模拟';
-    const newId = `uploaded_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-
-    const baseQuestions = examsData.length > 0 ? JSON.parse(JSON.stringify(examsData[0].questions)) : [];
-    
-    return {
-      id: newId,
-      title: rawName,
-      year,
-      district,
-      category,
-      questions: baseQuestions
-    };
-  };
-
-  const processUploadedFile = (file: File) => {
-    const fileName = file.name.toLowerCase();
-    setUploadError('');
-    setUploadSuccess(false);
-
-    let type: 'docx' | 'pdf' | null = null;
-    if (fileName.endsWith('.docx')) type = 'docx';
-    else if (fileName.endsWith('.pdf')) type = 'pdf';
-
-    if (type) {
-      setUploadedFileName(file.name);
-      setUploadedFileType(type);
-      setUploadSuccess(true);
-
-      const generatedExam = createUploadedExam(file, type);
-      setNewCreatedExam(generatedExam);
-
-      setExamsData(prev => [generatedExam, ...prev]);
-    } else {
-      setUploadError('不支持该文件格式。上传仅支持 Word (.docx) 或 PDF (.pdf) 试卷文件！');
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processUploadedFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      processUploadedFile(e.target.files[0]);
-    }
-  };
 
   if (loading) {
     return (
@@ -460,12 +361,6 @@ export function App() {
               {selectedQKeys.size > 0 && (
                 <span className="cart-badge">{selectedQKeys.size}</span>
               )}
-            </button>
-            <button 
-              className={`nav-btn ${activeTab === 'admin' ? 'active' : ''}`}
-              onClick={() => setActiveTab('admin')}
-            >
-              <UploadCloud className="w-4 h-4" /> 试卷上传后台
             </button>
           </nav>
         </div>
@@ -849,183 +744,6 @@ export function App() {
             onClearAll={() => setSelectedQKeys(new Set())}
             onNavigateToModules={() => setActiveTab('modules')}
           />
-        )}
-
-                {/* TAB 4: Admin Drag & Drop Portal (Password Protected) */}
-        {activeTab === 'admin' && (
-          <div className="no-print">
-            {!isAdminAuthorized ? (
-              /* 🔐 极简隐蔽版管理员验证卡片 */
-              <div style={{ minHeight: '380px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <form 
-                  onSubmit={handleUnlockAdmin}
-                  style={{
-                    background: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '16px',
-                    padding: '2.5rem 2rem',
-                    width: '100%',
-                    maxWidth: '360px',
-                    textAlign: 'center',
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)'
-                  }}
-                >
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f0f9ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', border: '1px solid #bae6fd' }}>
-                    <Lock className="w-5 h-5 text-sky-600" />
-                  </div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1.25rem' }}>
-                    管理员验证
-                  </h3>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <input 
-                      type="password"
-                      placeholder="请输入管理员密码"
-                      value={adminPasswordInput}
-                      onChange={(e) => { setAdminPasswordInput(e.target.value); setAdminAuthError(false); }}
-                      style={{
-                        width: '100%',
-                        padding: '0.65rem 1rem',
-                        borderRadius: '8px',
-                        border: `1px solid ${adminAuthError ? '#ef4444' : '#cbd5e1'}`,
-                        fontSize: '0.9rem',
-                        outline: 'none',
-                        transition: 'border-color 0.2s ease'
-                      }}
-                    />
-                    {adminAuthError && (
-                      <div style={{ color: '#ef4444', fontSize: '0.8rem', textAlign: 'left', fontWeight: 500 }}>
-                        密码错误，请重新输入
-                      </div>
-                    )}
-                    <button 
-                      type="submit"
-                      className="action-btn action-btn-primary"
-                      style={{ padding: '0.65rem', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, marginTop: '0.25rem' }}
-                    >
-                      确认解锁 →
-                    </button>
-                  </div>
-                </form>
-              </div>
-            ) : (
-              /* 🟢 已授权管理员控制面板 */
-              <div>
-                <div style={{ background: '#fff', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                  <div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f172a' }}>
-                      <UploadCloud className="w-5 h-5 text-sky-500" /> 管理员试卷一键拖拽上传控制中心
-                    </h2>
-                    <p style={{ color: '#64748b', fontSize: '0.88rem', marginTop: '0.2rem' }}>
-                      在下方拖拽上传新试卷 Word (.docx) 或 PDF (.pdf)，后台 API 将全自动进行切片提取、生成全要素 JSON 数据库。
-                    </p>
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#059669', background: '#d1fae5', padding: '0.3rem 0.75rem', borderRadius: '20px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                      🟢 已通过管理员认证
-                    </span>
-                    <button 
-                      onClick={() => setIsAdminAuthorized(false)}
-                      style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '0.35rem 0.85rem', borderRadius: '8px', fontSize: '0.82rem', cursor: 'pointer', color: '#475569', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 500 }}
-                    >
-                      <LogOut className="w-3.5 h-3.5" /> 锁定退出
-                    </button>
-                  </div>
-                </div>
-
-                <input 
-                  type="file"
-                  ref={fileInputRef}
-                  accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }}
-                />
-
-                <div 
-                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{
-                    border: `2px dashed ${isDragging ? '#0284c7' : '#cbd5e1'}`,
-                    background: isDragging ? '#e0f2fe' : '#fff',
-                    borderRadius: '16px',
-                    padding: '4rem 2rem',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <UploadCloud style={{ width: '64px', height: '64px', color: '#0284c7', margin: '0 auto 1rem' }} />
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-                    点击或拖拽上传新试卷 Word (.docx) 或 PDF (.pdf) 文档
-                  </h3>
-                  <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                    支持青岛中考真题及市南、市北、李沧、崂山、城阳、即墨、黄岛、平度、莱西等区县一模二模试卷（支持 Word 与 PDF 双解析通道）
-                  </p>
-                  <button 
-                    className="action-btn action-btn-primary" 
-                    style={{ display: 'inline-flex', width: 'auto', padding: '0.65rem 2rem' }}
-                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                  >
-                    选择本地文件 (.docx / .pdf)
-                  </button>
-                </div>
-
-                {uploadError && (
-                  <div style={{ marginTop: '1.5rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <AlertTriangle style={{ width: '28px', height: '28px', color: '#dc2626' }} />
-                    <div style={{ color: '#991b1b', fontWeight: 600, fontSize: '0.95rem' }}>
-                      {uploadError}
-                    </div>
-                  </div>
-                )}
-
-                {uploadSuccess && (
-                  <div style={{ marginTop: '1.5rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '280px' }}>
-                      <CheckCircle2 style={{ width: '36px', height: '36px', color: '#16a34a', flexShrink: 0 }} />
-                      <div>
-                        <h4 style={{ fontWeight: 700, color: '#166534', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                          🎉 预检成功！已成功识别并构建全要素 JSON: <span style={{ color: '#0369a1', background: '#e0f2fe', padding: '0.1rem 0.5rem', borderRadius: '6px' }}>{uploadedFileType === 'pdf' ? '📄 PDF' : '📝 Word'}</span> {uploadedFileName}
-                        </h4>
-                        <p style={{ color: '#15803d', fontSize: '0.85rem', marginTop: '0.3rem' }}>
-                          {uploadedFileType === 'pdf' 
-                            ? '已完成 PDF 物理排版解析与文字/OCR 结构化切片提取，全要素试卷数据已成功注入全站试卷大盘！'
-                            : '已完成 Word 原装 Native Runs 切片提取与解包，全要素试卷数据已成功注入全站试卷大盘！'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {newCreatedExam && (
-                      <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                        <button
-                          className="action-btn action-btn-primary"
-                          onClick={() => {
-                            setSelectedCategory('全部');
-                            setSelectedYears(new Set(['全部']));
-                            setSelectedDistricts(new Set(['全部']));
-                            setActiveTab('catalog');
-                          }}
-                          style={{ padding: '0.55rem 1.1rem', fontSize: '0.88rem', fontWeight: 700, background: '#16a34a', borderColor: '#16a34a' }}
-                        >
-                          👉 切换至【试卷大盘】查看卡片
-                        </button>
-                        <button
-                          className="action-btn"
-                          onClick={() => setViewingExam(newCreatedExam)}
-                          style={{ padding: '0.55rem 1.1rem', fontSize: '0.88rem', fontWeight: 600, color: '#0284c7', borderColor: '#0284c7', background: '#fff' }}
-                        >
-                          👁️ 全屏查看此试卷
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
         )}
 
         {/* Modal for viewing single exam */}
