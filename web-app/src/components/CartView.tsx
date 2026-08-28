@@ -107,9 +107,33 @@ export const CartView: React.FC<CartViewProps> = ({
     }, 0);
   }, [selectedQuestions]);
 
+  // Helper to format HTML strings into Word MSO Inline-Styled HTML
+  const formatForWord = (htmlStr?: string): string => {
+    if (!htmlStr) return '';
+    let s = htmlStr;
+
+    // 1. Transform bold <b> and <strong> -> MSO bold
+    s = s.replace(/<b>(.*?)<\/b>/gi, '<b style="font-weight: bold; mso-bidi-font-weight: bold; color: #0f172a;">$1</b>');
+    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: bold; mso-bidi-font-weight: bold; color: #0f172a;">$1</strong>');
+
+    // 2. Transform wavy underline <u style="text-decoration: wavy;">
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="mso-text-underline-style: wave; text-decoration: underline; color: #0284c7;">$1</u>');
+
+    // 3. Transform standard underline <u>
+    s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="mso-text-underline-style: single; text-decoration: underline; color: #0f172a;">$1</u>');
+
+    // 4. Transform dot emphasis (加点字/着重号) <span class="dot-char"> and <span class="dot-emphasis">
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: heavy-dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
+    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: heavy-dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
+
+    return s;
+  };
+
   // A4 Document HTML Builder (Dynamic based on passage & answer inclusion per question)
   const buildA4HTML = () => {
-    let html = '<!DOCTYPE html><html><head><meta charset="utf-8">';
+    let html = '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">';
+    html += '<meta name="ProgId" content="Word.Document">';
+    html += '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->';
     html += '<title>' + paperTitle + '</title>';
     html += '<style>';
     html += '@page { size: A4 portrait; margin: 20mm 15mm; }';
@@ -151,23 +175,23 @@ export const CartView: React.FC<CartViewProps> = ({
       html += '<div class="q-header">第 ' + (index + 1) + ' 题 【' + item.year + ' ' + item.district + ' ' + item.examCategory + '】 (' + (q.score || 2) + '分)</div>';
 
       if (hasPassage) {
-        html += '<div class="passage-box"><strong>【阅读材料】</strong><br/>' + q.passage + '</div>';
+        html += '<div class="passage-box"><strong>【阅读材料】</strong><br/>' + formatForWord(q.passage) + '</div>';
       }
 
-      html += '<div class="stem">' + cleanStem(q.stem) + '</div>';
+      html += '<div class="stem">' + formatForWord(cleanStem(q.stem)) + '</div>';
 
       if (q.options && q.options.length > 0) {
         q.options.forEach(opt => {
-          html += '<div class="option-line">' + opt + '</div>';
+          html += '<div class="option-line">' + formatForWord(opt) + '</div>';
         });
       }
 
       if (hasAnswer) {
         html += '<div class="answer-card">';
         html += '<div class="ans-title">🎯 【参考答案】</div>';
-        html += '<div class="ans-content">' + q.answer + '</div>';
+        html += '<div class="ans-content">' + formatForWord(q.answer) + '</div>';
         html += '<div class="ans-title" style="margin-top:8px;">💡 【详细解析与考点说明】</div>';
-        html += '<div class="ans-content">' + q.analysis + '</div>';
+        html += '<div class="ans-content">' + formatForWord(q.analysis) + '</div>';
         html += '</div>';
       } else {
         if (!q.options || q.options.length === 0) {
