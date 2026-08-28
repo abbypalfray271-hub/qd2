@@ -129,7 +129,11 @@ export const CartView: React.FC<CartViewProps> = ({
     html += '.ans-title { font-weight: bold; color: #166534; font-size: 10.5pt; }';
     html += '.ans-content { color: #14532d; font-size: 10.5pt; margin-top: 4pt; }';
     html += '.blank-line { height: 40pt; border-bottom: 1px dashed #cbd5e1; margin-top: 8pt; }';
-    html += '.dot-emphasis { border-bottom: 2px dotted #0284c7; padding-bottom: 1px; font-weight: bold; }';
+    html += '.dot-emphasis, .dot-char, mark { text-decoration: underline !important; mso-text-underline-style: heavy-dot !important; mso-text-underline-color: #0f172a !important; text-underline-position: under !important; font-weight: bold; }';
+    html += 'u, .underline { text-decoration: underline !important; mso-text-underline-style: single !important; text-underline-offset: 3px; color: #0f172a; }';
+    html += '.wavy-underline { text-decoration: underline wavy #0284c7 !important; mso-text-underline-style: wave !important; }';
+    html += '.blank-underline { display: inline-block; min-width: 50pt; border-bottom: 1.5pt solid #0f172a; }';
+    html += '.exam-bold, b, strong { font-weight: bold !important; color: #0f172a !important; }';
     html += '</style></head><body>';
 
     html += '<div class="WordSection1"><div class="paper-container">';
