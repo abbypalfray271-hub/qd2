@@ -4317,7 +4317,7 @@
         "score": 2,
         "section_title": "二、阅读",
         "group_title": "（二）文言文阅读",
-        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销以为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵以守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\">因其地形，致兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
+        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销<span class=\"dot-char\">以</span>为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵<span class=\"dot-char\">以</span>守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\"><span class=\"dot-char\">因</span><span class=\"dot-char\">其</span>地形，<span class=\"dot-char\">致</span>兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
         "stem": "12. 下列各句中，加点词语解释不正确的一项是（2分）（    ）",
         "options": [
           "A. 秦悉塞外之兵（悉：全，尽）",
@@ -4333,7 +4333,7 @@
         "score": 2,
         "section_title": "二、阅读",
         "group_title": "（二）文言文阅读",
-        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销以为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵以守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\">因其地形，致兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
+        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销<span class=\"dot-char\">以</span>为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵<span class=\"dot-char\">以</span>守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\"><span class=\"dot-char\">因</span><span class=\"dot-char\">其</span>地形，<span class=\"dot-char\">致</span>兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
         "stem": "13. 下列对文中画波浪线部分的断句，正确的一项是（2分）（    ）",
         "options": [
           "A. 秦悉塞外之兵/以守边/因其地形/致兵御之",
@@ -4349,7 +4349,7 @@
         "score": 2,
         "section_title": "二、阅读",
         "group_title": "（二）文言文阅读",
-        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销以为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵以守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\">因其地形，致兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
+        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销<span class=\"dot-char\">以</span>为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵<span class=\"dot-char\">以</span>守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\"><span class=\"dot-char\">因</span><span class=\"dot-char\">其</span>地形，<span class=\"dot-char\">致</span>兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
         "stem": "14. 下列各项中，加点词语的意思和用法相同的一项是（2分）（    ）",
         "options": [
           "A. 秦悉塞外之兵 / 予独爱莲之出淤泥而不染",
@@ -4365,7 +4365,7 @@
         "score": 2,
         "section_title": "二、阅读",
         "group_title": "（二）文言文阅读",
-        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销以为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵以守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\">因其地形，致兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
+        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销<span class=\"dot-char\">以</span>为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵<span class=\"dot-char\">以</span>守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\"><span class=\"dot-char\">因</span><span class=\"dot-char\">其</span>地形，<span class=\"dot-char\">致</span>兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
         "stem": "15. 下列对选文相关内容的理解，不正确的一项是（2分）（    ）",
         "options": [
           "A. 甲文刻石赞扬了秦始皇统一天下、推行法度、功盖五帝的丰功伟绩",
@@ -4381,7 +4381,7 @@
         "score": 4,
         "section_title": "二、阅读",
         "group_title": "（二）文言文阅读",
-        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销以为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵以守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\">因其地形，致兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
+        "passage": "【阅读材料三·文言文阅读（《秦封山刻石》与《汉书·食货志》）】\n【甲】皇帝即位，创建明法，端平法度，修整万物。六合之内，皇帝之土。西涉流沙，南尽北户。东有东海，北过大夏。人迹所至，无不臣者。功盖五帝，泽及牛马。莫不受德，各安其宇。\n\n【乙】秦撤天下之兵，聚之咸阳，销<span class=\"dot-char\">以</span>为钟鐻金人十二。秦<span class=\"dot-char\">悉</span><span class=\"dot-char\">塞</span>外<span class=\"dot-char\">之</span>兵<span class=\"dot-char\">以</span>守边，<u style=\"text-decoration: wavy;\">秦悉塞外之兵以守边因其地形致兵御之</u>。<u class=\"underline\"><span class=\"dot-char\">因</span><span class=\"dot-char\">其</span>地形，<span class=\"dot-char\">致</span>兵御之</u>。又筑长城，起临洮，至辽东，延袤万余里。然而陈涉以戍卒发呼，大呼而天下响应。自古及今，未有防民之口而能久长者也。\n\n（节选自《史记·秦始皇本纪》刻石文及《汉书·食货志》，有删改）\n【注释】①悉：全，尽。②塞：边塞。③<span class=\"dot-char\">因</span>：依据，顺应。④<span class=\"dot-char\">致</span>：调集，派往。⑤<span class=\"dot-char\">于</span>：介词。",
         "stem": "16. 请将文中画横线的句子翻译成现代汉语（4分）。\n\n因其地形，致兵御之。",
         "options": [],
         "answer": "依据当地的险要地形，派驻调集兵力防守敌人。",
