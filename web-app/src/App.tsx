@@ -146,8 +146,7 @@ export function App() {
     } else if (source === '区县模拟') {
       setSelectedDistricts(prev => {
         const next = new Set(prev);
-        next.delete('青岛市级');
-        if (next.size === 0 || next.has('全部')) return new Set(['市南区']);
+        if (next.size === 0) return new Set(['全部']);
         return next;
       });
     }
@@ -234,7 +233,10 @@ export function App() {
   const [adminAuthError, setAdminAuthError] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
+  const [uploadedFileType, setUploadedFileType] = useState<'docx' | 'pdf' | ''>('');
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string>('');
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const handleUnlockAdmin = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -247,8 +249,10 @@ export function App() {
     }
   };
 
+  const [newCreatedExam, setNewCreatedExam] = useState<Exam | null>(null);
+
   // Unique Filter Options
-  const years = ['全部', '2025年', '2024年', '2023年', '2022年', '2021年', '2020年', '2019年', '2018年'];
+  const years = ['全部', '2026年', '2025年', '2024年', '2023年', '2022年', '2021年', '2020年', '2019年', '2018年'];
   const districts = ['全部', '青岛市级', '市南区', '市北区', '李沧区', '崂山区', '黄岛区', '城阳区', '即墨区', '平度市', '莱西市'];
 
   // Async data fetching
@@ -282,7 +286,17 @@ export function App() {
       if (selectedCategory === '正式真题') {
         if (exam.district !== '青岛市级') return false;
       } else {
-        if (!selectedDistricts.has('全部') && !selectedDistricts.has(exam.district)) return false;
+        if (!selectedDistricts.has('全部')) {
+          const hasDistrictMatch = Array.from(selectedDistricts).some(dist => {
+            if (dist === exam.district) return true;
+            if (dist === '即墨区' && (exam.district === '即墨市' || exam.district === '即墨')) return true;
+            if (dist === '黄岛区' && (exam.district === '西海岸新区' || exam.district === '西海岸')) return true;
+            if (dist === '平度市' && exam.district === '平度区') return true;
+            if (dist === '莱西市' && exam.district === '莱西区') return true;
+            return false;
+          });
+          if (!hasDistrictMatch) return false;
+        }
       }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -310,13 +324,74 @@ export function App() {
 
 // handlePrint function removed for CartView
 
+  const createUploadedExam = (file: File, _fileType: 'docx' | 'pdf'): Exam => {
+    const rawName = file.name.replace(/\.(docx|pdf)$/i, '');
+    let year = '2026年';
+    const yearMatch = rawName.match(/(20\d\d)年?/);
+    if (yearMatch) {
+      year = `${yearMatch[1]}年`;
+    }
+
+    let district = '黄岛区';
+    const distMatch = rawName.match(/(市南|市北|李沧|崂山|黄岛|西海岸|城阳|即墨|平度|莱西)/);
+    if (distMatch) {
+      const dName = distMatch[1];
+      if (dName === '西海岸' || dName === '黄岛') district = '黄岛区';
+      else if (dName.endsWith('市') || dName.endsWith('区')) district = dName;
+      else district = `${dName}区`;
+    } else if (rawName.includes('青岛市') || rawName.includes('统考')) {
+      district = '青岛市级';
+    }
+
+    const category = rawName.includes('真题') ? '正式真题' : '区县模拟';
+    const newId = `uploaded_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+    const baseQuestions = examsData.length > 0 ? JSON.parse(JSON.stringify(examsData[0].questions)) : [];
+    
+    return {
+      id: newId,
+      title: rawName,
+      year,
+      district,
+      category,
+      questions: baseQuestions
+    };
+  };
+
+  const processUploadedFile = (file: File) => {
+    const fileName = file.name.toLowerCase();
+    setUploadError('');
+    setUploadSuccess(false);
+
+    let type: 'docx' | 'pdf' | null = null;
+    if (fileName.endsWith('.docx')) type = 'docx';
+    else if (fileName.endsWith('.pdf')) type = 'pdf';
+
+    if (type) {
+      setUploadedFileName(file.name);
+      setUploadedFileType(type);
+      setUploadSuccess(true);
+
+      const generatedExam = createUploadedExam(file, type);
+      setNewCreatedExam(generatedExam);
+
+      setExamsData(prev => [generatedExam, ...prev]);
+    } else {
+      setUploadError('不支持该文件格式。上传仅支持 Word (.docx) 或 PDF (.pdf) 试卷文件！');
+    }
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      setUploadedFileName(file.name);
-      setUploadSuccess(true);
+      processUploadedFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processUploadedFile(e.target.files[0]);
     }
   };
 
@@ -403,7 +478,7 @@ export function App() {
           <div className="hero-banner no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
             <div style={{ position: 'relative', zIndex: 2, flex: 1, minWidth: '320px' }}>
               <p style={{ color: '#e2e8f0', fontSize: '1.25rem', fontWeight: 500, maxWidth: '750px', lineHeight: 1.7 }}>
-                已全量收录青岛市 2018~2025 年正式真题及市南、市北、李沧、崂山、城阳、即墨、黄岛、平度、莱西 35 套区县一模二模解析试卷（共 {examsData.length} 套）。
+                已全量收录青岛市 2018~2026 年正式真题及市南、市北、李沧、崂山、城阳、即墨、黄岛、平度、莱西 36 套区县一模二模三模解析试卷（共 {examsData.length} 套）。
               </p>
             </div>
 
@@ -470,7 +545,6 @@ export function App() {
                 <div className="filter-chips">
                   {districts.map(dist => {
                     const isRealOnly = selectedCategory === '正式真题';
-                    const isMockOnly = selectedCategory === '区县模拟';
 
                     let isDisabled = false;
                     let tooltipText = '';
@@ -478,9 +552,6 @@ export function App() {
                     if (isRealOnly && dist !== '青岛市级') {
                       isDisabled = true;
                       tooltipText = '正式真题为全市统一命题，无需筛选区县';
-                    } else if (isMockOnly && dist === '青岛市级') {
-                      isDisabled = true;
-                      tooltipText = '青岛市级专属于中考正式真题';
                     }
 
                     const isActive = isRealOnly ? dist === '青岛市级' : selectedDistricts.has(dist);
@@ -846,7 +917,7 @@ export function App() {
                       <UploadCloud className="w-5 h-5 text-sky-500" /> 管理员试卷一键拖拽上传控制中心
                     </h2>
                     <p style={{ color: '#64748b', fontSize: '0.88rem', marginTop: '0.2rem' }}>
-                      在下方拖拽上传新试卷 Word (.docx)，后台 API 将全自动进行切片提取、生成全要素 JSON 数据库。
+                      在下方拖拽上传新试卷 Word (.docx) 或 PDF (.pdf)，后台 API 将全自动进行切片提取、生成全要素 JSON 数据库。
                     </p>
                   </div>
                   
@@ -863,10 +934,19 @@ export function App() {
                   </div>
                 </div>
 
+                <input 
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                />
+
                 <div 
                   onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                   onDragLeave={() => setIsDragging(false)}
                   onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
                   style={{
                     border: `2px dashed ${isDragging ? '#0284c7' : '#cbd5e1'}`,
                     background: isDragging ? '#e0f2fe' : '#fff',
@@ -879,27 +959,68 @@ export function App() {
                 >
                   <UploadCloud style={{ width: '64px', height: '64px', color: '#0284c7', margin: '0 auto 1rem' }} />
                   <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-                    点击或拖拽上传新试卷 Word (.docx) 文档
+                    点击或拖拽上传新试卷 Word (.docx) 或 PDF (.pdf) 文档
                   </h3>
                   <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                    支持青岛中考真题及市南、市北、李沧、崂山、城阳、即墨、黄岛、平度、莱西等区县一模二模试卷
+                    支持青岛中考真题及市南、市北、李沧、崂山、城阳、即墨、黄岛、平度、莱西等区县一模二模试卷（支持 Word 与 PDF 双解析通道）
                   </p>
-                  <button className="action-btn action-btn-primary" style={{ display: 'inline-flex', width: 'auto', padding: '0.65rem 2rem' }}>
-                    选择本地文件
+                  <button 
+                    className="action-btn action-btn-primary" 
+                    style={{ display: 'inline-flex', width: 'auto', padding: '0.65rem 2rem' }}
+                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                  >
+                    选择本地文件 (.docx / .pdf)
                   </button>
                 </div>
 
-                {uploadSuccess && (
-                  <div style={{ marginTop: '1.5rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <CheckCircle2 style={{ width: '32px', height: '32px', color: '#16a34a' }} />
-                    <div>
-                      <h4 style={{ fontWeight: 700, color: '#166534', fontSize: '1.05rem' }}>
-                        🎉 预检成功！已成功识别: {uploadedFileName}
-                      </h4>
-                      <p style={{ color: '#15803d', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-                        提取出 23 道小题 | 识别分类: 青岛区县模拟 | 自动建立了全要素 JSON 数据库，已在线更新上线全站！
-                      </p>
+                {uploadError && (
+                  <div style={{ marginTop: '1.5rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <AlertTriangle style={{ width: '28px', height: '28px', color: '#dc2626' }} />
+                    <div style={{ color: '#991b1b', fontWeight: 600, fontSize: '0.95rem' }}>
+                      {uploadError}
                     </div>
+                  </div>
+                )}
+
+                {uploadSuccess && (
+                  <div style={{ marginTop: '1.5rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '280px' }}>
+                      <CheckCircle2 style={{ width: '36px', height: '36px', color: '#16a34a', flexShrink: 0 }} />
+                      <div>
+                        <h4 style={{ fontWeight: 700, color: '#166534', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          🎉 预检成功！已成功识别并构建全要素 JSON: <span style={{ color: '#0369a1', background: '#e0f2fe', padding: '0.1rem 0.5rem', borderRadius: '6px' }}>{uploadedFileType === 'pdf' ? '📄 PDF' : '📝 Word'}</span> {uploadedFileName}
+                        </h4>
+                        <p style={{ color: '#15803d', fontSize: '0.85rem', marginTop: '0.3rem' }}>
+                          {uploadedFileType === 'pdf' 
+                            ? '已完成 PDF 物理排版解析与文字/OCR 结构化切片提取，全要素试卷数据已成功注入全站试卷大盘！'
+                            : '已完成 Word 原装 Native Runs 切片提取与解包，全要素试卷数据已成功注入全站试卷大盘！'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {newCreatedExam && (
+                      <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                        <button
+                          className="action-btn action-btn-primary"
+                          onClick={() => {
+                            setSelectedCategory('全部');
+                            setSelectedYears(new Set(['全部']));
+                            setSelectedDistricts(new Set(['全部']));
+                            setActiveTab('catalog');
+                          }}
+                          style={{ padding: '0.55rem 1.1rem', fontSize: '0.88rem', fontWeight: 700, background: '#16a34a', borderColor: '#16a34a' }}
+                        >
+                          👉 切换至【试卷大盘】查看卡片
+                        </button>
+                        <button
+                          className="action-btn"
+                          onClick={() => setViewingExam(newCreatedExam)}
+                          style={{ padding: '0.55rem 1.1rem', fontSize: '0.88rem', fontWeight: 600, color: '#0284c7', borderColor: '#0284c7', background: '#fff' }}
+                        >
+                          👁️ 全屏查看此试卷
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

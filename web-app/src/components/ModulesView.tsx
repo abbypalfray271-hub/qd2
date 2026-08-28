@@ -81,8 +81,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
     } else if (source === '区县模拟') {
       setSelectedDistricts(prev => {
         const next = new Set(prev);
-        next.delete('青岛市级');
-        if (next.size === 0 || next.has('全部')) return new Set(['市南区']);
+        if (next.size === 0) return new Set(['全部']);
         return next;
       });
     }
@@ -177,7 +176,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
   // Expanded answer states
   const [expandedAnswers, setExpandedAnswers] = useState<Record<string, boolean>>({});
 
-  const years = ['全部', '2025年', '2024年', '2023年', '2022年', '2021年', '2020年', '2019年', '2018年'];
+  const years = ['全部', '2026年', '2025年', '2024年', '2023年', '2022年', '2021年', '2020年', '2019年', '2018年'];
   const districts = ['全部', '青岛市级', '市南区', '市北区', '李沧区', '崂山区', '黄岛区', '城阳区', '即墨区', '平度市', '莱西市'];
 
   // Categorized questions computation
@@ -189,7 +188,17 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
       const matchSource = sourceFilter === 'all' || exam.category === sourceFilter || isSpecificDistrictSelected;
       if (!matchSource) return;
       if (!selectedYears.has('全部') && !selectedYears.has(exam.year)) return;
-      if (!selectedDistricts.has('全部') && !selectedDistricts.has(exam.district)) return;
+      if (!selectedDistricts.has('全部')) {
+        const hasDistrictMatch = Array.from(selectedDistricts).some(dist => {
+          if (dist === exam.district) return true;
+          if (dist === '即墨区' && (exam.district === '即墨市' || exam.district === '即墨')) return true;
+          if (dist === '黄岛区' && (exam.district === '西海岸新区' || exam.district === '西海岸')) return true;
+          if (dist === '平度市' && exam.district === '平度区') return true;
+          if (dist === '莱西市' && exam.district === '莱西区') return true;
+          return false;
+        });
+        if (!hasDistrictMatch) return;
+      }
 
       exam.questions.forEach((q, qIdx) => {
         const qKey = `${exam.id}_q${qIdx + 1}`;
@@ -377,7 +386,6 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
           <div className="filter-chips">
             {districts.map(dist => {
               const isRealOnly = sourceFilter === '正式真题';
-              const isMockOnly = sourceFilter === '区县模拟';
 
               let isDisabled = false;
               let tooltipText = '';
@@ -385,9 +393,6 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
               if (isRealOnly && dist !== '青岛市级') {
                 isDisabled = true;
                 tooltipText = '正式真题为全市统一命题，无需筛选区县';
-              } else if (isMockOnly && dist === '青岛市级') {
-                isDisabled = true;
-                tooltipText = '青岛市级专属于中考正式真题';
               }
 
               const isActive = isRealOnly ? dist === '青岛市级' : selectedDistricts.has(dist);
