@@ -256,22 +256,21 @@ export const CartView: React.FC<CartViewProps> = ({
   // Export A4 Word Document (.doc) - Cross-platform compatible with iOS Safari & WeChat
   const handleExportA4Word = () => {
     if (selectedQuestions.length === 0) return;
-    const htmlContent = buildA4HTML('word');
-    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+    const isIOSDevice = isIOS();
 
-    if (isIOS()) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64data = reader.result as string;
-        const win = window.open('', '_blank');
-        if (win) {
-          win.document.write(`<iframe src="${base64data}" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%; position:fixed;" allowfullscreen></iframe>`);
-        } else {
-          location.href = base64data;
-        }
-      };
-      reader.readAsDataURL(blob);
+    if (isIOSDevice) {
+      // Synchronously open a new window on user click so iOS Safari DOES NOT BLOCK popups!
+      const win = window.open('', '_blank');
+      if (!win) return;
+      const htmlContent = buildA4HTML('word');
+
+      // Inject styled HTML document with clear iOS download/share actions
+      win.document.open();
+      win.document.write(htmlContent);
+      win.document.close();
     } else {
+      const htmlContent = buildA4HTML('word');
+      const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -286,6 +285,29 @@ export const CartView: React.FC<CartViewProps> = ({
   // Export A4 PDF directly via html2pdf.js - Cross-platform compatible with iOS Safari & WeChat
   const handleExportA4PDF = () => {
     if (selectedQuestions.length === 0) return;
+    const isIOSDevice = isIOS();
+
+    // CRITICAL iOS FIX: Synchronously open a new window inside the user's touch event!
+    // Safari WILL BLOCK window.open if it is called asynchronously after html2pdf finishes!
+    let iosWindow: Window | null = null;
+    if (isIOSDevice) {
+      iosWindow = window.open('', '_blank');
+      if (iosWindow) {
+        iosWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>正在生成 PDF 试卷...</title></head>
+          <body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0; background:#f8fafc; color:#0f172a;">
+            <div style="text-align:center; padding:20px;">
+              <div style="font-size:24px; font-weight:bold; margin-bottom:12px; color:#0284c7;">📄 正在为您排版生成 A4 PDF...</div>
+              <div style="font-size:14px; color:#64748b;">请稍候，生成完成后将自动展示试卷预览</div>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+    }
+
     const htmlContent = buildA4HTML('pdf');
 
     const iframe = document.createElement('iframe');
@@ -317,13 +339,12 @@ export const CartView: React.FC<CartViewProps> = ({
       };
 
       try {
-        if (isIOS()) {
+        if (isIOSDevice) {
           // @ts-ignore
           html2pdf().set(opt).from(doc.body).outputPdf('datauristring').then((pdfDataUri: string) => {
             if (document.body.contains(iframe)) document.body.removeChild(iframe);
-            const pdfWindow = window.open('', '_blank');
-            if (pdfWindow) {
-              pdfWindow.document.write(`<iframe src="${pdfDataUri}" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%; position:fixed;"></iframe>`);
+            if (iosWindow && !iosWindow.closed) {
+              iosWindow.location.href = pdfDataUri;
             } else {
               location.href = pdfDataUri;
             }
@@ -338,9 +359,8 @@ export const CartView: React.FC<CartViewProps> = ({
         }
       } catch (e) {
         console.error("PDF export failed:", e);
-        if (document.body.contains(iframe)) {
-          document.body.removeChild(iframe);
-        }
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+        if (iosWindow && !iosWindow.closed) iosWindow.close();
       }
     }, 300);
   };
