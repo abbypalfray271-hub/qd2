@@ -107,30 +107,30 @@ export const CartView: React.FC<CartViewProps> = ({
     }, 0);
   }, [selectedQuestions]);
 
-  // Helper to format HTML strings into Word MSO Inline-Styled HTML
+  // Helper to format HTML strings into Dual-Engine Hybrid (PDF + Word) Inline-Styled HTML
   const formatForWord = (htmlStr?: string): string => {
     if (!htmlStr) return '';
     let s = htmlStr;
 
-    // 0. Convert raw newline \n into HTML physical <br/> breaks (prevent paragraphs collapsing)
+    // 0. Convert raw newline \n into HTML physical <br/> breaks
     s = s.replace(/\r?\n/g, '<br/>');
 
-    // 1. Transform bold <b> and <strong> -> MSO bold with HeiTi fallback to force Word rendering bold characters
-    s = s.replace(/<b>(.*?)<\/b>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
-    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
+    // 1. Transform bold <b> and <strong> -> MSO bold with HeiTi fallback
+    s = s.replace(/<b>(.*?)<\/b>/gi, '<strong class="exam-bold" style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
+    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong class="exam-bold" style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
 
-    // 2. Transform wavy underline <u style="text-decoration: wavy;"> (strip text-decoration to avoid overriding mso-text-underline-style)
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<span style="mso-text-underline-style: wave; color: #0284c7;">$1</span>');
+    // 2. Transform wavy underline <u style="text-decoration: wavy;"> -> Dual Engine (PDF text-decoration wavy + Word mso-wave)
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u class="wavy-underline" style="mso-text-underline-style: wave; text-decoration: underline wavy #0284c7 !important; text-underline-offset: 3px; color: #0284c7;">$1</u>');
 
     // 3. Transform standard underline <u>
-    s = s.replace(/<u>(.*?)<\/u>/gi, '<span style="mso-text-underline-style: single; color: #0f172a;">$1</span>');
+    s = s.replace(/<u>(.*?)<\/u>/gi, '<u class="underline" style="mso-text-underline-style: single; text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a;">$1</u>');
 
-    // 4. Transform dot emphasis (加点字/着重号) <span class="dot-char"> and <span class="dot-emphasis"> (strip text-decoration to avoid overriding mso-text-underline-style)
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: heavy-dot; font-weight: bold; color: #0f172a;">$1</span>');
-    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: heavy-dot; font-weight: bold; color: #0f172a;">$1</span>');
+    // 4. Transform dot emphasis (加点字/着重号) <span class="dot-char"> and <span class="dot-emphasis"> -> Dual Engine (PDF ::after + Word mso heavy-dot)
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span class="dot-char" style="mso-text-underline-style: heavy-dot; -webkit-text-emphasis: dot; text-emphasis: dot; text-emphasis-position: under; color: #0f172a;">$1</span>');
+    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span class="dot-emphasis">$1</span>');
 
     // 5. Transform blank underline <span class="blank-underline">
-    s = s.replace(/<span class="blank-underline">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: single; color: #0f172a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+    s = s.replace(/<span class="blank-underline">(.*?)<\/span>/gi, '<span class="blank-underline" style="mso-text-underline-style: single; text-decoration: underline !important; color: #0f172a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
 
     return s;
   };
@@ -159,9 +159,10 @@ export const CartView: React.FC<CartViewProps> = ({
     html += '.ans-title { font-weight: bold; color: #166534; font-size: 10.5pt; }';
     html += '.ans-content { color: #14532d; font-size: 10.5pt; margin-top: 4pt; }';
     html += '.blank-line { height: 40pt; border-bottom: 1px dashed #cbd5e1; margin-top: 8pt; }';
-    html += '.dot-emphasis, .dot-char, mark { text-decoration: underline !important; mso-text-underline-style: heavy-dot !important; mso-text-underline-color: #0f172a !important; text-underline-position: under !important; font-weight: bold; }';
-    html += 'u, .underline { text-decoration: underline !important; mso-text-underline-style: single !important; text-underline-offset: 3px; color: #0f172a; }';
-    html += '.wavy-underline { text-decoration: underline wavy #0284c7 !important; mso-text-underline-style: wave !important; }';
+    html += '.dot-char { display: inline-block; position: relative; margin: 0 1px; }';
+    html += '.dot-char::after { content: "●"; position: absolute; bottom: -0.55em; left: 50%; transform: translateX(-50%); font-size: 0.55em; color: #0f172a; font-weight: 900; line-height: 1; }';
+    html += 'u, .underline { text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a; }';
+    html += '.wavy-underline { text-decoration: underline wavy #0284c7 !important; text-underline-offset: 3px; color: #0284c7; }';
     html += '.blank-underline { display: inline-block; min-width: 50pt; border-bottom: 1.5pt solid #0f172a; }';
     html += '.exam-bold, b, strong { font-weight: bold !important; color: #0f172a !important; }';
     html += '</style></head><body>';
