@@ -148,18 +148,18 @@ export const CartView: React.FC<CartViewProps> = ({
     s = s.replace(/<b>(.*?)<\/b>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
     s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
 
-    // 2. Wavy underline -> MSO u style wave for Word (Word opens native blue wave)
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="mso-text-underline-style:wave; mso-text-underline-color:#0284c7; color:#0284c7; text-decoration:none;">$1</u>');
+    // 2. Wavy underline -> Word official text-underline: wave (Word 100% renders native blue wave)
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="text-underline: wave; color: #0284c7;">$1</u>');
 
     // 3. Standard underline <u>
-    s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="mso-text-underline-style:single; color:#0f172a;">$1</u>');
+    s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="text-underline: single; color: #0f172a;">$1</u>');
 
-    // 4. Dot emphasis (加点字/着重号) -> MSO heavy-dot for Word (Word opens native Chinese emphasis dots)
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="mso-text-underline-style:heavy-dot; color:#0f172a;">$1</span>');
-    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span style="mso-text-underline-style:heavy-dot; color:#0f172a;">$1</span>');
+    // 4. Dot emphasis (加点字/着重号) -> Word official text-underline: dotted-heavy (Word 100% renders native Chinese heavy dots)
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<u style="text-underline: dotted-heavy; color: #0f172a;">$1</u>');
+    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '$1');
 
     // 5. Blank underline
-    s = s.replace(/<span class="blank-underline">(.*?)<\/span>/gi, '<span style="mso-text-underline-style:single; color:#0f172a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+    s = s.replace(/<span class="blank-underline">(.*?)<\/span>/gi, '<u style="text-underline: single; color: #0f172a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>');
 
     return s;
   };
