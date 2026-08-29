@@ -112,19 +112,22 @@ export const CartView: React.FC<CartViewProps> = ({
     if (!htmlStr) return '';
     let s = htmlStr;
 
-    // 1. Transform bold <b> and <strong> -> MSO bold
-    s = s.replace(/<b>(.*?)<\/b>/gi, '<b style="font-weight: bold; mso-bidi-font-weight: bold; color: #0f172a;">$1</b>');
-    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: bold; mso-bidi-font-weight: bold; color: #0f172a;">$1</strong>');
+    // 0. Convert raw newline \n into HTML physical <br/> breaks (prevent paragraphs collapsing)
+    s = s.replace(/\r?\n/g, '<br/>');
+
+    // 1. Transform bold <b> and <strong> -> MSO bold with HeiTi fallback to force Word rendering bold characters
+    s = s.replace(/<b>(.*?)<\/b>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
+    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
 
     // 2. Transform wavy underline <u style="text-decoration: wavy;">
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="mso-text-underline-style: wave; text-decoration: underline; color: #0284c7;">$1</u>');
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="mso-text-underline-style: wave; text-decoration: underline; text-decoration-style: wavy; color: #0284c7;">$1</u>');
 
     // 3. Transform standard underline <u>
     s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="mso-text-underline-style: single; text-decoration: underline; color: #0f172a;">$1</u>');
 
     // 4. Transform dot emphasis (加点字/着重号) <span class="dot-char"> and <span class="dot-emphasis">
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: heavy-dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
-    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: heavy-dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
+    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
 
     return s;
   };
