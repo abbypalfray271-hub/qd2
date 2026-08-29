@@ -107,7 +107,36 @@ export const CartView: React.FC<CartViewProps> = ({
     }, 0);
   }, [selectedQuestions]);
 
-  // Helper to format HTML strings into Dual-Engine Hybrid (PDF + Word) Inline-Styled HTML
+  // Helper to format HTML strings for PDF (html2canvas SVG vector wave & Chromium ::after dots)
+  const formatForPDF = (htmlStr?: string): string => {
+    if (!htmlStr) return '';
+    let s = htmlStr;
+
+    // 0. Convert raw newline \n into HTML physical <br/> breaks
+    s = s.replace(/\r?\n/g, '<br/>');
+
+    // 1. Bold <b> and <strong>
+    s = s.replace(/<b>(.*?)<\/b>/gi, '<strong class="exam-bold" style="font-weight: 900; color: #0f172a;">$1</strong>');
+    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong class="exam-bold" style="font-weight: 900; color: #0f172a;">$1</strong>');
+
+    // 2. Wavy underline -> Inline SVG Wave for html2canvas (100% renders crisp blue wavy line in PDF)
+    const svgWaveNode = '<span class="wavy-wrapper" style="position:relative; display:inline-block; vertical-align:bottom; color:#0284c7;">$1<svg style="position:absolute; left:0; bottom:-2px; width:100%; height:4px; overflow:visible;" preserveAspectRatio="none" viewBox="0 0 20 4"><path d="M 0,2 Q 2.5,0 5,2 T 10,2 T 15,2 T 20,2" fill="none" stroke="#0284c7" stroke-width="1.2"/></svg></span>';
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, svgWaveNode);
+
+    // 3. Standard underline <u>
+    s = s.replace(/<u>(.*?)<\/u>/gi, '<u class="underline" style="text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a;">$1</u>');
+
+    // 4. Dot emphasis (加点字/着重号) <span class="dot-char">
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span class="dot-char" style="display:inline-block; position:relative; margin:0 1px; color:#0f172a;">$1</span>');
+    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span class="dot-emphasis">$1</span>');
+
+    // 5. Blank underline
+    s = s.replace(/<span class="blank-underline">(.*?)<\/span>/gi, '<span class="blank-underline" style="text-decoration: underline !important; color: #0f172a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+
+    return s;
+  };
+
+  // Helper to format HTML strings for Word (.doc MSO Filter Engine)
   const formatForWord = (htmlStr?: string): string => {
     if (!htmlStr) return '';
     let s = htmlStr;
@@ -115,29 +144,29 @@ export const CartView: React.FC<CartViewProps> = ({
     // 0. Convert raw newline \n into HTML physical <br/> breaks
     s = s.replace(/\r?\n/g, '<br/>');
 
-    // 1. Transform bold <b> and <strong> -> MSO bold with HeiTi fallback
-    s = s.replace(/<b>(.*?)<\/b>/gi, '<strong class="exam-bold" style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
-    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong class="exam-bold" style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
+    // 1. Bold <b> and <strong> -> HeiTi fallback for Word
+    s = s.replace(/<b>(.*?)<\/b>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
+    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
 
-    // 2. Transform wavy underline <u style="text-decoration: wavy;"> -> SVG vector wave for PDF + span style="mso-text-underline-style: wave;" for Word (DO NOT USE <u> TAG!)
-    const svgWaveBg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='4'><path d='M0 3 Q 1.5 0.5, 3 3 T 6 3' fill='none' stroke='%230284c7' stroke-width='1.2'/></svg>";
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, `<span class="wavy-underline" style="background: url('${svgWaveBg}') repeat-x bottom; padding-bottom: 3px; mso-text-underline-style: wave; color: #0284c7;">$1</span>`);
+    // 2. Wavy underline -> MSO u style wave for Word (Word opens native blue wave)
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="mso-text-underline-style:wave; mso-text-underline-color:#0284c7; color:#0284c7; text-decoration:none;">$1</u>');
 
-    // 3. Transform standard underline <u>
-    s = s.replace(/<u>(.*?)<\/u>/gi, '<span class="underline" style="mso-text-underline-style: single; text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a;">$1</span>');
+    // 3. Standard underline <u>
+    s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="mso-text-underline-style:single; color:#0f172a;">$1</u>');
 
-    // 4. Transform dot emphasis (加点字/着重号) <span class="dot-char"> -> PDF ::after black bullet + Word span style="mso-text-underline-style: heavy-dot;" (DO NOT USE <u> TAG!)
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span class="dot-char" style="mso-text-underline-style: heavy-dot; color: #0f172a;">$1</span>');
-    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span class="dot-emphasis">$1</span>');
+    // 4. Dot emphasis (加点字/着重号) -> MSO heavy-dot for Word (Word opens native Chinese emphasis dots)
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="mso-text-underline-style:heavy-dot; color:#0f172a;">$1</span>');
+    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span style="mso-text-underline-style:heavy-dot; color:#0f172a;">$1</span>');
 
-    // 5. Transform blank underline <span class="blank-underline">
-    s = s.replace(/<span class="blank-underline">(.*?)<\/span>/gi, '<span class="blank-underline" style="mso-text-underline-style: single; text-decoration: underline !important; color: #0f172a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
+    // 5. Blank underline
+    s = s.replace(/<span class="blank-underline">(.*?)<\/span>/gi, '<span style="mso-text-underline-style:single; color:#0f172a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
 
     return s;
   };
 
-  // A4 Document HTML Builder (Dynamic based on passage & answer inclusion per question)
-  const buildA4HTML = () => {
+  // A4 Document HTML Builder (Dynamic based on target: 'pdf' or 'word')
+  const buildA4HTML = (target: 'pdf' | 'word' = 'word') => {
+    const formatter = target === 'pdf' ? formatForPDF : formatForWord;
     let html = '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">';
     html += '<meta name="ProgId" content="Word.Document">';
     html += '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->';
@@ -183,23 +212,23 @@ export const CartView: React.FC<CartViewProps> = ({
       html += '<div class="q-header">第 ' + (index + 1) + ' 题 【' + item.year + ' ' + item.district + ' ' + item.examCategory + '】 (' + (q.score || 2) + '分)</div>';
 
       if (hasPassage) {
-        html += '<div class="passage-box"><strong>【阅读材料】</strong><br/>' + formatForWord(q.passage) + '</div>';
+        html += '<div class="passage-box"><strong>【阅读材料】</strong><br/>' + formatter(q.passage) + '</div>';
       }
 
-      html += '<div class="stem">' + formatForWord(cleanStem(q.stem)) + '</div>';
+      html += '<div class="stem">' + formatter(cleanStem(q.stem)) + '</div>';
 
       if (q.options && q.options.length > 0) {
         q.options.forEach(opt => {
-          html += '<div class="option-line">' + formatForWord(opt) + '</div>';
+          html += '<div class="option-line">' + formatter(opt) + '</div>';
         });
       }
 
       if (hasAnswer) {
         html += '<div class="answer-card">';
         html += '<div class="ans-title">🎯 【参考答案】</div>';
-        html += '<div class="ans-content">' + formatForWord(q.answer) + '</div>';
+        html += '<div class="ans-content">' + formatter(q.answer) + '</div>';
         html += '<div class="ans-title" style="margin-top:8px;">💡 【详细解析与考点说明】</div>';
-        html += '<div class="ans-content">' + formatForWord(q.analysis) + '</div>';
+        html += '<div class="ans-content">' + formatter(q.analysis) + '</div>';
         html += '</div>';
       } else {
         if (!q.options || q.options.length === 0) {
@@ -217,7 +246,7 @@ export const CartView: React.FC<CartViewProps> = ({
   // Export A4 Word Document (.doc)
   const handleExportA4Word = () => {
     if (selectedQuestions.length === 0) return;
-    const htmlContent = buildA4HTML();
+    const htmlContent = buildA4HTML('word');
     const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -232,7 +261,7 @@ export const CartView: React.FC<CartViewProps> = ({
   // Export A4 PDF directly via html2pdf.js (Zero print window popup, pure direct file download)
   const handleExportA4PDF = () => {
     if (selectedQuestions.length === 0) return;
-    const htmlContent = buildA4HTML();
+    const htmlContent = buildA4HTML('pdf');
 
     const element = document.createElement('div');
     element.innerHTML = htmlContent;
