@@ -126,8 +126,8 @@ export const CartView: React.FC<CartViewProps> = ({
     s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="mso-text-underline-style: single; text-decoration: underline; color: #0f172a;">$1</u>');
 
     // 4. Transform dot emphasis (加点字/着重号) <span class="dot-char"> and <span class="dot-emphasis">
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
-    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: heavy-dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
+    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span style="mso-text-underline-style: heavy-dot; text-decoration: underline; font-weight: bold; color: #0f172a;">$1</span>');
 
     return s;
   };
