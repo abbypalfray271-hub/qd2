@@ -119,8 +119,8 @@ export const CartView: React.FC<CartViewProps> = ({
     s = s.replace(/<b>(.*?)<\/b>/gi, '<strong class="exam-bold" style="font-weight: 900; color: #0f172a;">$1</strong>');
     s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong class="exam-bold" style="font-weight: 900; color: #0f172a;">$1</strong>');
 
-    // 2. Wavy underline -> Foreground Inline SVG Wave (100% immune to background graphics setting)
-    const svgWaveNode = '<span style="position:relative; display:inline-block; vertical-align:top; color: #0284c7;">$1<svg style="position:absolute; bottom:-1px; left:0; width:100%; height:6px; overflow:visible; pointer-events:none;" preserveAspectRatio="none" viewBox="0 0 100 6"><path d="M 0,3 Q 2.5,0 5,3 T 10,3 T 15,3 T 20,3 T 25,3 T 30,3 T 35,3 T 40,3 T 45,3 T 50,3 T 55,3 T 60,3 T 65,3 T 70,3 T 75,3 T 80,3 T 85,3 T 90,3 T 95,3 T 100,3" fill="none" stroke="%230284c7" stroke-width="2.2"/></svg></span>';
+    // 2. Wavy underline -> SVG background image Data-URI + inline-block (100% renders crisp blue wavy line in html2canvas PDF)
+    const svgWaveNode = '<span class="wavy-underline" style="display:inline-block; background-image: url(\'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'8\' height=\'5\' viewBox=\'0 0 8 5\'%3E%3Cpath d=\'M 0,2.5 Q 2,0 4,2.5 T 8,2.5\' fill=\'none\' stroke=\'%230284c7\' stroke-width=\'1.8\' stroke-linecap=\'round\'/%3E%3C/svg%3E\'); background-position: bottom left; background-repeat: repeat-x; padding-bottom: 3px; color: #0284c7;">$1</span>';
     s = s.replace(/<u[^>]*style="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, svgWaveNode);
     s = s.replace(/<u[^>]*class="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, svgWaveNode);
     s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, svgWaveNode);
@@ -262,13 +262,18 @@ export const CartView: React.FC<CartViewProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  // Export A4 PDF directly via html2pdf.js (Zero print window popup, pure direct file download)
+  // Export A4 PDF directly via html2pdf.js (Mount to DOM tree temporarily so html2canvas computes DOM layout & renders SVG wave)
   const handleExportA4PDF = () => {
     if (selectedQuestions.length === 0) return;
     const htmlContent = buildA4HTML('pdf');
 
     const element = document.createElement('div');
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
+    element.style.top = '-9999px';
+    element.style.width = '800px';
     element.innerHTML = htmlContent;
+    document.body.appendChild(element);
 
     const opt = {
       margin:       [12, 12, 12, 12],
@@ -281,9 +286,16 @@ export const CartView: React.FC<CartViewProps> = ({
 
     try {
       // @ts-ignore
-      html2pdf().set(opt).from(element).save();
+      html2pdf().set(opt).from(element).save().then(() => {
+        if (document.body.contains(element)) {
+          document.body.removeChild(element);
+        }
+      });
     } catch (e) {
       console.error("PDF export failed:", e);
+      if (document.body.contains(element)) {
+        document.body.removeChild(element);
+      }
     }
   };
 
