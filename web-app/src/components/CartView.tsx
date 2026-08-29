@@ -107,7 +107,7 @@ export const CartView: React.FC<CartViewProps> = ({
     }, 0);
   }, [selectedQuestions]);
 
-  // Helper to format HTML strings for PDF (html2canvas SVG vector wave & Chromium ::after dots)
+  // Helper to format HTML strings for PDF (Foreground SVG vector wave & Chromium ::after dots)
   const formatForPDF = (htmlStr?: string): string => {
     if (!htmlStr) return '';
     let s = htmlStr;
@@ -119,8 +119,10 @@ export const CartView: React.FC<CartViewProps> = ({
     s = s.replace(/<b>(.*?)<\/b>/gi, '<strong class="exam-bold" style="font-weight: 900; color: #0f172a;">$1</strong>');
     s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong class="exam-bold" style="font-weight: 900; color: #0f172a;">$1</strong>');
 
-    // 2. Wavy underline -> Inline SVG Wave for html2canvas (100% renders crisp blue wavy line in PDF)
-    const svgWaveNode = '<span class="wavy-wrapper" style="position:relative; display:inline-block; vertical-align:bottom; color:#0284c7;">$1<svg style="position:absolute; left:0; bottom:-2px; width:100%; height:4px; overflow:visible;" preserveAspectRatio="none" viewBox="0 0 20 4"><path d="M 0,2 Q 2.5,0 5,2 T 10,2 T 15,2 T 20,2" fill="none" stroke="#0284c7" stroke-width="1.2"/></svg></span>';
+    // 2. Wavy underline -> Foreground Inline SVG Wave (100% immune to background graphics setting)
+    const svgWaveNode = '<span style="position:relative; display:inline-block; vertical-align:top; color: #0284c7;">$1<svg style="position:absolute; bottom:-1px; left:0; width:100%; height:6px; overflow:visible; pointer-events:none;" preserveAspectRatio="none" viewBox="0 0 100 6"><path d="M 0,3 Q 2.5,0 5,3 T 10,3 T 15,3 T 20,3 T 25,3 T 30,3 T 35,3 T 40,3 T 45,3 T 50,3 T 55,3 T 60,3 T 65,3 T 70,3 T 75,3 T 80,3 T 85,3 T 90,3 T 95,3 T 100,3" fill="none" stroke="%230284c7" stroke-width="2.2"/></svg></span>';
+    s = s.replace(/<u[^>]*style="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, svgWaveNode);
+    s = s.replace(/<u[^>]*class="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, svgWaveNode);
     s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, svgWaveNode);
 
     // 3. Standard underline <u>
@@ -148,13 +150,15 @@ export const CartView: React.FC<CartViewProps> = ({
     s = s.replace(/<b>(.*?)<\/b>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
     s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
 
-    // 2. Wavy underline -> Foreground Inline SVG Vector Component (100% immune to background graphics stripping, PDF & Word 100% renders crisp blue wave)
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<span style="position:relative; display:inline-block; vertical-align:top; color: #0284c7;"><u style="text-underline: wave; mso-text-underline-style: wave; text-decoration: none;">$1</u><svg style="position:absolute; bottom:-1px; left:0; width:100%; height:6px; overflow:visible; pointer-events:none;" preserveAspectRatio="none" viewBox="0 0 100 6"><path d="M 0,3 Q 2.5,0 5,3 T 10,3 T 15,3 T 20,3 T 25,3 T 30,3 T 35,3 T 40,3 T 45,3 T 50,3 T 55,3 T 60,3 T 65,3 T 70,3 T 75,3 T 80,3 T 85,3 T 90,3 T 95,3 T 100,3" fill="none" stroke="%230284c7" stroke-width="2.2"/></svg></span>');
+    // 2. Wavy underline -> Pure Word MSO Wavy Underline
+    s = s.replace(/<u[^>]*style="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, '<u style="text-underline: wave; mso-text-underline-style: wave; color: #0284c7;">$1</u>');
+    s = s.replace(/<u[^>]*class="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, '<u style="text-underline: wave; mso-text-underline-style: wave; color: #0284c7;">$1</u>');
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="text-underline: wave; mso-text-underline-style: wave; color: #0284c7;">$1</u>');
 
-    // 3. Standard underline <u> -> Word official text-underline: thick & mso-text-underline-style: thick (Word & Web 100% renders thick bold straight underline)
+    // 3. Standard underline <u> -> Word official text-underline: thick & mso-text-underline-style: thick (Word 100% renders thick bold straight underline)
     s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="text-underline: thick; mso-text-underline-style: thick; text-decoration: underline; text-decoration-thickness: 3px; color: #0f172a;">$1</u>');
 
-    // 4. Dot emphasis (加点字/着重号) -> Word & WPS Native Heavy Dotted Underline (100% renders native dotted underline DIRECTLY UNDERNEATH each character)
+    // 4. Dot emphasis (加点字/着重号) -> Word & WPS Native Heavy Dotted Underline
     s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<u style="text-underline: dotted-heavy; color: #0f172a;">$1</u>');
     s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '$1');
 
