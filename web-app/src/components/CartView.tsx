@@ -262,15 +262,17 @@ export const CartView: React.FC<CartViewProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  // Export A4 PDF directly via html2pdf.js (Mount to DOM tree temporarily so html2canvas computes DOM layout & renders SVG wave)
+  // Export A4 PDF directly via html2pdf.js (Mount to DOM tree at z-index: -9999 (0,0) so html2canvas captures full layout & renders SVG wave)
   const handleExportA4PDF = () => {
     if (selectedQuestions.length === 0) return;
     const htmlContent = buildA4HTML('pdf');
 
     const element = document.createElement('div');
     element.style.position = 'absolute';
-    element.style.left = '-9999px';
-    element.style.top = '-9999px';
+    element.style.left = '0px';
+    element.style.top = '0px';
+    element.style.zIndex = '-9999';
+    element.style.background = '#ffffff';
     element.style.width = '800px';
     element.innerHTML = htmlContent;
     document.body.appendChild(element);
