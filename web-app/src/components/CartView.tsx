@@ -148,8 +148,8 @@ export const CartView: React.FC<CartViewProps> = ({
     s = s.replace(/<b>(.*?)<\/b>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
     s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
 
-    // 2. Wavy underline -> Word official text-underline: wave & mso-text-underline-style: wave (100% renders blue wave, zero loss)
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="text-underline: wave; mso-text-underline-style: wave; text-decoration: underline wavy; text-decoration-thickness: 2.5px; color: #0284c7;">$1</u>');
+    // 2. Wavy underline -> Triple-layer Architecture (PDF 100% renders crisp SVG wave, Word & Web 100% renders blue wave)
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="text-underline: wave; mso-text-underline-style: wave; text-decoration: underline wavy #0284c7; text-decoration-thickness: 2.5px; background-image: url(\'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'8\' height=\'5\' viewBox=\'0 0 8 5\'%3E%3Cpath d=\'M 0,2.5 Q 2,0 4,2.5 T 8,2.5\' fill=\'none\' stroke=\'%230284c7\' stroke-width=\'1.8\' stroke-linecap=\'round\'/%3E%3C/svg%3E\'); background-position: bottom left; background-repeat: repeat-x; padding-bottom: 3px; color: #0284c7;">$1</u>');
 
     // 3. Standard underline <u> -> Word official text-underline: thick & mso-text-underline-style: thick (Word & Web 100% renders thick bold straight underline)
     s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="text-underline: thick; mso-text-underline-style: thick; text-decoration: underline; text-decoration-thickness: 3px; color: #0f172a;">$1</u>');
