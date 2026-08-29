@@ -262,43 +262,53 @@ export const CartView: React.FC<CartViewProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  // Export A4 PDF directly via html2pdf.js (Mount to DOM tree at z-index: -9999 (0,0) so html2canvas captures full layout & renders SVG wave)
+  // Export A4 PDF directly via html2pdf.js using an isolated hidden iframe sandbox
   const handleExportA4PDF = () => {
     if (selectedQuestions.length === 0) return;
     const htmlContent = buildA4HTML('pdf');
 
-    const element = document.createElement('div');
-    element.style.position = 'absolute';
-    element.style.left = '0px';
-    element.style.top = '0px';
-    element.style.zIndex = '-9999';
-    element.style.background = '#ffffff';
-    element.style.width = '800px';
-    element.innerHTML = htmlContent;
-    document.body.appendChild(element);
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.style.visibility = 'hidden';
+    document.body.appendChild(iframe);
 
-    const opt = {
-      margin:       [12, 12, 12, 12],
-      filename:     `${paperTitle}_A4标准排版.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, logging: false },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css', 'legacy'] }
-    };
+    const win = iframe.contentWindow;
+    if (!win) return;
 
-    try {
-      // @ts-ignore
-      html2pdf().set(opt).from(element).save().then(() => {
-        if (document.body.contains(element)) {
-          document.body.removeChild(element);
+    const doc = win.document;
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+
+    setTimeout(() => {
+      const opt = {
+        margin:       [12, 12, 12, 12],
+        filename:     `${paperTitle}_A4标准排版.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['css', 'legacy'] }
+      };
+
+      try {
+        // @ts-ignore
+        html2pdf().set(opt).from(doc.body).save().then(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        });
+      } catch (e) {
+        console.error("PDF export failed:", e);
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
         }
-      });
-    } catch (e) {
-      console.error("PDF export failed:", e);
-      if (document.body.contains(element)) {
-        document.body.removeChild(element);
       }
-    }
+    }, 300);
   };
 
   return (
