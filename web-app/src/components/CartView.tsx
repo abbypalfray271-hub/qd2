@@ -119,14 +119,15 @@ export const CartView: React.FC<CartViewProps> = ({
     s = s.replace(/<b>(.*?)<\/b>/gi, '<strong class="exam-bold" style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
     s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong class="exam-bold" style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', \'SimSun\', sans-serif; color: #0f172a;">$1</strong>');
 
-    // 2. Transform wavy underline <u style="text-decoration: wavy;"> -> Dual Engine (PDF text-decoration wavy + Word mso-wave)
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u class="wavy-underline" style="mso-text-underline-style: wave; text-decoration: underline wavy #0284c7 !important; text-underline-offset: 3px; color: #0284c7;">$1</u>');
+    // 2. Transform wavy underline <u style="text-decoration: wavy;"> -> SVG vector wave for PDF + span style="mso-text-underline-style: wave;" for Word (DO NOT USE <u> TAG!)
+    const svgWaveBg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='4'><path d='M0 3 Q 1.5 0.5, 3 3 T 6 3' fill='none' stroke='%230284c7' stroke-width='1.2'/></svg>";
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, `<span class="wavy-underline" style="background: url('${svgWaveBg}') repeat-x bottom; padding-bottom: 3px; mso-text-underline-style: wave; color: #0284c7;">$1</span>`);
 
     // 3. Transform standard underline <u>
-    s = s.replace(/<u>(.*?)<\/u>/gi, '<u class="underline" style="mso-text-underline-style: single; text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a;">$1</u>');
+    s = s.replace(/<u>(.*?)<\/u>/gi, '<span class="underline" style="mso-text-underline-style: single; text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a;">$1</span>');
 
-    // 4. Transform dot emphasis (加点字/着重号) <span class="dot-char"> and <span class="dot-emphasis"> -> Dual Engine (PDF ::after + Word mso heavy-dot)
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span class="dot-char" style="mso-text-underline-style: heavy-dot; -webkit-text-emphasis: dot; text-emphasis: dot; text-emphasis-position: under; color: #0f172a;">$1</span>');
+    // 4. Transform dot emphasis (加点字/着重号) <span class="dot-char"> -> PDF ::after black bullet + Word span style="mso-text-underline-style: heavy-dot;" (DO NOT USE <u> TAG!)
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span class="dot-char" style="mso-text-underline-style: heavy-dot; color: #0f172a;">$1</span>');
     s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span class="dot-emphasis">$1</span>');
 
     // 5. Transform blank underline <span class="blank-underline">
