@@ -154,8 +154,8 @@ export const CartView: React.FC<CartViewProps> = ({
     // 3. Standard underline <u>
     s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="text-underline: single; color: #0f172a;">$1</u>');
 
-    // 4. Dot emphasis (加点字/着重号) -> Native MS Word & WPS Emphasis Mark (wdEmphasisMarkUnderDot = 2, 100% renders solid black dots DIRECTLY UNDERNEATH each character)
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="font-emphasize: accent; mso-font-emphasize: accent; -webkit-text-emphasis: filled dot; text-emphasis: filled dot; text-emphasis-position: under right; -webkit-text-emphasis-position: under right;">$1</span>');
+    // 4. Dot emphasis (加点字/着重号) -> Word & WPS Native EQ Down Field + HTML Ruby Under (100% renders solid black dots DIRECTLY UNDERNEATH each character)
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<!--[if gte mso 9]><span style="mso-element:field-begin"></span> EQ \\o\\ad(\\s\\down 6(●),$1)<span style="mso-element:field-separator"></span><span style="mso-element:field-end"></span><![endif]--><!--[if !mso]><!--><ruby style="ruby-position: under; -webkit-ruby-position: under;">$1<rt style="font-size: 7pt; font-family: \'SimSun\', serif; font-weight: bold; color: #0f172a;">●</rt></ruby><!--<![endif]-->');
     s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '$1');
 
     // 5. Blank underline
