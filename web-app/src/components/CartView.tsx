@@ -154,8 +154,8 @@ export const CartView: React.FC<CartViewProps> = ({
     // 3. Standard underline <u>
     s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="text-underline: single; color: #0f172a;">$1</u>');
 
-    // 4. Dot emphasis (加点字/着重号) -> Word official text-underline: dotted-heavy (Word 100% renders native Chinese heavy dots)
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<u style="text-underline: dotted-heavy; color: #0f172a;">$1</u>');
+    // 4. Dot emphasis (加点字/着重号) -> Word official font-emphasize: accent (Word 100% renders native solid black round emphasis dots ● ● ● ● under each character)
+    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span style="font-emphasize: accent; font-emphasize-position: below; color: #0f172a;">$1</span>');
     s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '$1');
 
     // 5. Blank underline
