@@ -247,22 +247,43 @@ export const CartView: React.FC<CartViewProps> = ({
     return html;
   };
 
-  // Export A4 Word Document (.doc)
+  // Helper to detect iOS Apple devices (iPhone / iPad / iPod)
+  const isIOS = () => {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  };
+
+  // Export A4 Word Document (.doc) - Cross-platform compatible with iOS Safari & WeChat
   const handleExportA4Word = () => {
     if (selectedQuestions.length === 0) return;
     const htmlContent = buildA4HTML('word');
     const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = paperTitle + '_A4标准排版.doc';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+
+    if (isIOS()) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        const win = window.open('', '_blank');
+        if (win) {
+          win.document.write(`<iframe src="${base64data}" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%; position:fixed;" allowfullscreen></iframe>`);
+        } else {
+          location.href = base64data;
+        }
+      };
+      reader.readAsDataURL(blob);
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = paperTitle + '_A4标准排版.doc';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
-  // Export A4 PDF directly via html2pdf.js using an isolated hidden iframe sandbox
+  // Export A4 PDF directly via html2pdf.js - Cross-platform compatible with iOS Safari & WeChat
   const handleExportA4PDF = () => {
     if (selectedQuestions.length === 0) return;
     const htmlContent = buildA4HTML('pdf');
@@ -296,12 +317,25 @@ export const CartView: React.FC<CartViewProps> = ({
       };
 
       try {
-        // @ts-ignore
-        html2pdf().set(opt).from(doc.body).save().then(() => {
-          if (document.body.contains(iframe)) {
-            document.body.removeChild(iframe);
-          }
-        });
+        if (isIOS()) {
+          // @ts-ignore
+          html2pdf().set(opt).from(doc.body).outputPdf('datauristring').then((pdfDataUri: string) => {
+            if (document.body.contains(iframe)) document.body.removeChild(iframe);
+            const pdfWindow = window.open('', '_blank');
+            if (pdfWindow) {
+              pdfWindow.document.write(`<iframe src="${pdfDataUri}" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%; position:fixed;"></iframe>`);
+            } else {
+              location.href = pdfDataUri;
+            }
+          });
+        } else {
+          // @ts-ignore
+          html2pdf().set(opt).from(doc.body).save().then(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          });
+        }
       } catch (e) {
         console.error("PDF export failed:", e);
         if (document.body.contains(iframe)) {
