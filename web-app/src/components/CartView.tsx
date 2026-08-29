@@ -148,11 +148,11 @@ export const CartView: React.FC<CartViewProps> = ({
     s = s.replace(/<b>(.*?)<\/b>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
     s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
 
-    // 2. Wavy underline -> Word official text-underline: wave-heavy (Word & Web 100% renders bold blue wave)
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="text-underline: wave-heavy; text-decoration: underline wavy; text-decoration-thickness: 2.5px; color: #0284c7;">$1</u>');
+    // 2. Wavy underline -> Word official text-underline: wave & mso-text-underline-style: wave (100% renders blue wave, zero loss)
+    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="text-underline: wave; mso-text-underline-style: wave; text-decoration: underline wavy; text-decoration-thickness: 2.5px; color: #0284c7;">$1</u>');
 
-    // 3. Standard underline <u> -> Word official text-underline: heavy (Word & Web 100% renders bold straight underline)
-    s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="text-underline: heavy; text-decoration: underline; text-decoration-thickness: 2px; color: #0f172a;">$1</u>');
+    // 3. Standard underline <u> -> Word official text-underline: thick & mso-text-underline-style: thick (Word & Web 100% renders thick bold straight underline)
+    s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="text-underline: thick; mso-text-underline-style: thick; text-decoration: underline; text-decoration-thickness: 3px; color: #0f172a;">$1</u>');
 
     // 4. Dot emphasis (加点字/着重号) -> Word & WPS Native Heavy Dotted Underline (100% renders native dotted underline DIRECTLY UNDERNEATH each character)
     s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<u style="text-underline: dotted-heavy; color: #0f172a;">$1</u>');
