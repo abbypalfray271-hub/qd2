@@ -385,8 +385,8 @@ app.get('/api/export/download-pdf', (req: Request, res: Response) => {
     .blank-line { height: 40pt; border-bottom: 1px dashed #cbd5e1; margin-top: 8pt; }
     .dot-char { display: inline-block; position: relative; margin: 0 1px; }
     .dot-char::after { content: "●"; position: absolute; bottom: -0.55em; left: 50%; transform: translateX(-50%); font-size: 0.55em; color: #0f172a; font-weight: 900; line-height: 1; }
-    u, .underline { text-decoration: underline !important; text-underline-offset: 5.5px !important; color: #0f172a; }
-    .wavy-underline { text-decoration: underline wavy #0284c7 !important; text-underline-offset: 5.5px !important; color: #0284c7; }
+    u:not(.wavy):not([style*="wavy"]):not([style*="wave"]), .underline { text-decoration: underline !important; text-underline-offset: 5.5px !important; color: #0f172a; }
+    u.wavy, .wavy-underline, span.wavy, u[style*="wavy"], u[style*="wave"] { text-decoration: underline wavy #0284c7 !important; text-decoration-thickness: 1.8px !important; text-underline-offset: 5.5px !important; color: #0284c7 !important; }
     .blank-underline { display: inline-block; min-width: 50pt; border-bottom: 1.5pt solid #0284c7; text-underline-offset: 5.5px !important; }
   </style>
   <script>
