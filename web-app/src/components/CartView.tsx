@@ -199,8 +199,10 @@ export const CartView: React.FC<CartViewProps> = ({
     html += '.wavy-underline { text-decoration: underline wavy #0284c7 !important; text-underline-offset: 3px; color: #0284c7; }';
     html += '.blank-underline { display: inline-block; min-width: 50pt; border-bottom: 1.5pt solid #0f172a; }';
     html += '.exam-bold, b, strong { font-weight: bold !important; color: #0f172a !important; }';
+    html += '@media print { .mobile-tip-banner { display: none !important; } }';
     html += '</style></head><body>';
 
+    html += '<div class="mobile-tip-banner" style="background:#e0f2fe; border:1px solid #bae6fd; color:#0369a1; text-align:center; padding:12px; font-size:13px; line-height:1.6; border-radius:8px; margin:12px auto; max-width:760px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">📱 <strong>手机端保存指南：</strong><br/>1. 点击 <strong>[📤 分享]</strong> 按钮选择 <strong>[保存到“文件”]</strong> 或 <strong>[在 WPS/Word 中打开]</strong>；<br/>2. 或点击右侧按钮：<button onclick="window.print()" style="background:#0284c7; color:#fff; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; margin-left:6px; cursor:pointer;">🖨️ 唤起手机打印 / 另存为 PDF</button></div>';
     html += '<div class="WordSection1"><div class="paper-container">';
     html += '<div class="paper-header">';
     html += '<div class="paper-title">' + paperTitle + '</div>';
@@ -247,28 +249,45 @@ export const CartView: React.FC<CartViewProps> = ({
     return html;
   };
 
-  // Helper to detect iOS Apple devices (iPhone / iPad / iPod)
-  const isIOS = () => {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  };
-
-  // Export A4 Word Document (.doc) - Cross-platform compatible with iOS Safari & WeChat
-  const handleExportA4Word = () => {
+  // Export A4 Word Document (.docx) via Server-side Binary Stream API
+  const handleExportA4Word = async () => {
     if (selectedQuestions.length === 0) return;
-    const isIOSDevice = isIOS();
 
-    if (isIOSDevice) {
-      // Synchronously open a new window on user click so iOS Safari DOES NOT BLOCK popups!
-      const win = window.open('', '_blank');
-      if (!win) return;
-      const htmlContent = buildA4HTML('word');
+    const isPassageIncludedMap: Record<string, boolean> = {};
+    const isAnswerIncludedMap: Record<string, boolean> = {};
+    selectedQuestions.forEach(item => {
+      isPassageIncludedMap[item.qKey] = isPassageIncluded(item.qKey);
+      isAnswerIncludedMap[item.qKey] = isAnswerIncluded(item.qKey);
+    });
 
-      // Inject styled HTML document with clear iOS download/share actions
-      win.document.open();
-      win.document.write(htmlContent);
-      win.document.close();
-    } else {
+    try {
+      const payload = {
+        paperTitle,
+        selectedQuestions,
+        totalScore,
+        isPassageIncludedMap,
+        isAnswerIncludedMap
+      };
+
+      const res = await fetch('/api/export/docx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Server docx export failed');
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${paperTitle}_A4标准排版.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      console.warn("Server docx export failed, using client fallback:", err);
       const htmlContent = buildA4HTML('word');
       const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
       const url = URL.createObjectURL(blob);
@@ -282,87 +301,54 @@ export const CartView: React.FC<CartViewProps> = ({
     }
   };
 
-  // Export A4 PDF directly via html2pdf.js - Cross-platform compatible with iOS Safari & WeChat
-  const handleExportA4PDF = () => {
+  // Export A4 PDF directly via Server API / Native Print Response
+  const handleExportA4PDF = async () => {
     if (selectedQuestions.length === 0) return;
-    const isIOSDevice = isIOS();
 
-    // CRITICAL iOS FIX: Synchronously open a new window inside the user's touch event!
-    // Safari WILL BLOCK window.open if it is called asynchronously after html2pdf finishes!
-    let iosWindow: Window | null = null;
-    if (isIOSDevice) {
-      iosWindow = window.open('', '_blank');
-      if (iosWindow) {
-        iosWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>正在生成 PDF 试卷...</title></head>
-          <body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0; background:#f8fafc; color:#0f172a;">
-            <div style="text-align:center; padding:20px;">
-              <div style="font-size:24px; font-weight:bold; margin-bottom:12px; color:#0284c7;">📄 正在为您排版生成 A4 PDF...</div>
-              <div style="font-size:14px; color:#64748b;">请稍候，生成完成后将自动展示试卷预览</div>
-            </div>
-          </body>
-          </html>
-        `);
-      }
-    }
+    const isPassageIncludedMap: Record<string, boolean> = {};
+    const isAnswerIncludedMap: Record<string, boolean> = {};
+    selectedQuestions.forEach(item => {
+      isPassageIncludedMap[item.qKey] = isPassageIncluded(item.qKey);
+      isAnswerIncludedMap[item.qKey] = isAnswerIncluded(item.qKey);
+    });
 
-    const htmlContent = buildA4HTML('pdf');
+    try {
+      const win = window.open('', '_blank');
+      if (!win) return;
 
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    iframe.style.visibility = 'hidden';
-    document.body.appendChild(iframe);
-
-    const win = iframe.contentWindow;
-    if (!win) return;
-
-    const doc = win.document;
-    doc.open();
-    doc.write(htmlContent);
-    doc.close();
-
-    setTimeout(() => {
-      const opt = {
-        margin:       [12, 12, 12, 12],
-        filename:     `${paperTitle}_A4标准排版.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'] }
+      const payload = {
+        paperTitle,
+        selectedQuestions,
+        totalScore,
+        isPassageIncludedMap,
+        isAnswerIncludedMap
       };
 
-      try {
-        if (isIOSDevice) {
-          // @ts-ignore
-          html2pdf().set(opt).from(doc.body).outputPdf('datauristring').then((pdfDataUri: string) => {
-            if (document.body.contains(iframe)) document.body.removeChild(iframe);
-            if (iosWindow && !iosWindow.closed) {
-              iosWindow.location.href = pdfDataUri;
-            } else {
-              location.href = pdfDataUri;
-            }
-          });
-        } else {
-          // @ts-ignore
-          html2pdf().set(opt).from(doc.body).save().then(() => {
-            if (document.body.contains(iframe)) {
-              document.body.removeChild(iframe);
-            }
-          });
-        }
-      } catch (e) {
-        console.error("PDF export failed:", e);
-        if (document.body.contains(iframe)) document.body.removeChild(iframe);
-        if (iosWindow && !iosWindow.closed) iosWindow.close();
+      const res = await fetch('/api/export/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Server PDF export failed');
+      const html = await res.text();
+
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+    } catch (err) {
+      console.warn("Server PDF export failed, using client fallback:", err);
+      const htmlContent = buildA4HTML('pdf');
+      const win = window.open('', '_blank');
+      if (win) {
+        win.document.open();
+        win.document.write(htmlContent);
+        win.document.close();
+        setTimeout(() => {
+          try { win.focus(); win.print(); } catch (e) {}
+        }, 500);
       }
-    }, 300);
+    }
   };
 
   return (
