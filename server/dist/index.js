@@ -341,7 +341,16 @@ app.get('/api/export/download-pdf', (req, res) => {
     .dot-char { display: inline-block; position: relative; margin: 0 1px; }
     .dot-char::after { content: "●"; position: absolute; bottom: -0.55em; left: 50%; transform: translateX(-50%); font-size: 0.55em; color: #0f172a; font-weight: 900; line-height: 1; }
     u:not(.wavy):not([style*="wavy"]):not([style*="wave"]), .underline { text-decoration: underline !important; text-underline-offset: 5.5px !important; color: #0f172a; }
-    u.wavy, .wavy-underline, span.wavy, u[style*="wavy"], u[style*="wave"] { text-decoration: underline wavy #0284c7 !important; text-decoration-thickness: 1.8px !important; text-underline-offset: 5.5px !important; color: #0284c7 !important; }
+    u.wavy, .wavy-underline, span.wavy, u[style*="wavy"], u[style*="wave"] {
+      text-decoration: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M 0,2.5 Q 2,0 4,2.5 T 8,2.5' fill='none' stroke='%230284c7' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+      background-position: bottom left !important;
+      background-repeat: repeat-x !important;
+      padding-bottom: 3.5px !important;
+      color: #0284c7 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     .blank-underline { display: inline-block; min-width: 50pt; border-bottom: 1.5pt solid #0284c7; text-underline-offset: 5.5px !important; }
   </style>
   <script>
