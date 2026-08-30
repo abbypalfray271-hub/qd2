@@ -29,39 +29,44 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
     for (const match of matches) {
         if (/<span[^>]*class="[^"]*blank-underline[^"]*"/i.test(match)) {
             runs.push(new docx_1.TextRun({
-                text: "        ", // 8 spaces filled with straight underline
-                font: "SimSun",
+                text: "   ______   ",
+                font: "SimHei",
+                bold: true,
                 size: 22,
-                color: defaultColor,
-                underline: { type: docx_1.UnderlineType.SINGLE }
+                color: "0284c7",
+                underline: { type: docx_1.UnderlineType.SINGLE, color: "0284c7" }
             }));
         }
         else if (/<span[^>]*class="[^"]*dot-char[^"]*"/i.test(match)) {
             const text = match.replace(/<[^>]+>/g, '');
-            // Attach Combining Dot Below (\u0323) to every character for 100% universal rendering across all iOS/Mobile previewers & desktop Word
+            // High-contrast HeiTi bold + Unicode combining dot below + official emphasisMark + dotted heavy underline for maximum vividness
             const dottedText = text.split('').map(c => (c.trim() ? c + '\u0323' : c)).join('');
             runs.push(new docx_1.TextRun({
                 text: dottedText,
-                font: "SimSun",
-                size: 22,
-                color: defaultColor,
-                emphasisMark: { type: docx_1.EmphasisMarkType.DOT }
+                font: "SimHei",
+                bold: true,
+                size: 23,
+                color: "0f172a",
+                emphasisMark: { type: docx_1.EmphasisMarkType.DOT },
+                underline: { type: docx_1.UnderlineType.DOTTEDHEAVY, color: "0f172a" }
             }));
         }
         else if (/<span[^>]*class="[^"]*dot-emphasis[^"]*"/i.test(match)) {
             const text = match.replace(/<[^>]+>/g, '');
             runs.push(new docx_1.TextRun({
                 text,
-                font: "SimSun",
-                size: 22,
-                color: defaultColor
+                font: "SimHei",
+                bold: true,
+                size: 23,
+                color: "0f172a"
             }));
         }
         else if (/<u[^>]*style="[^"]*wavy/i.test(match) || /<u[^>]*class="[^"]*wavy/i.test(match)) {
             const text = match.replace(/<[^>]+>/g, '');
             runs.push(new docx_1.TextRun({
                 text,
-                font: "SimSun",
+                font: "SimHei",
+                bold: true,
                 size: 22,
                 color: "0284c7",
                 underline: { type: docx_1.UnderlineType.WAVE, color: "0284c7" }
@@ -71,10 +76,11 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
             const text = match.replace(/<[^>]+>/g, '');
             runs.push(new docx_1.TextRun({
                 text,
-                font: "SimSun",
+                font: "SimHei",
+                bold: true,
                 size: 22,
-                color: defaultColor,
-                underline: { type: docx_1.UnderlineType.SINGLE }
+                color: "0f172a",
+                underline: { type: docx_1.UnderlineType.SINGLE, color: "0f172a" }
             }));
         }
         else if (match.startsWith('<strong') || match.startsWith('<b')) {
@@ -83,8 +89,8 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
                 text,
                 font: "SimHei",
                 bold: true,
-                size: 22,
-                color: defaultColor
+                size: 23,
+                color: "000000"
             }));
         }
         else if (match.startsWith('<')) {
