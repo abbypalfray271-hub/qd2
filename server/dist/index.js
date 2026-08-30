@@ -38,8 +38,10 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
         }
         else if (/<span[^>]*class="[^"]*dot-char[^"]*"/i.test(match)) {
             const text = match.replace(/<[^>]+>/g, '');
+            // Attach Combining Dot Below (\u0323) to every character for 100% universal rendering across all iOS/Mobile previewers & desktop Word
+            const dottedText = text.split('').map(c => (c.trim() ? c + '\u0323' : c)).join('');
             runs.push(new docx_1.TextRun({
-                text,
+                text: dottedText,
                 font: "SimSun",
                 size: 22,
                 color: defaultColor,
