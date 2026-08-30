@@ -39,13 +39,11 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
         }
         else if (/<span[^>]*class="[^"]*dot-char[^"]*"/i.test(match)) {
             const text = match.replace(/<[^>]+>/g, '');
-            // High-contrast HeiTi bold + Unicode combining dot below + official emphasisMark (NO extra underline!)
-            const dottedText = text.split('').map(c => (c.trim() ? c + '\u0323' : c)).join('');
             runs.push(new docx_1.TextRun({
-                text: dottedText,
+                text,
                 font: "SimHei",
                 bold: true,
-                size: 23,
+                size: 22,
                 color: "0f172a",
                 emphasisMark: { type: docx_1.EmphasisMarkType.DOT }
             }));
@@ -56,16 +54,14 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
                 text,
                 font: "SimHei",
                 bold: true,
-                size: 23,
+                size: 22,
                 color: "0f172a"
             }));
         }
         else if (/<u[^>]*style="[^"]*wavy/i.test(match) || /<u[^>]*class="[^"]*wavy/i.test(match)) {
             const text = match.replace(/<[^>]+>/g, '');
-            // Attach Combining Tilde Below (\u0330) to every character so iOS QuickLook & all previewers render a TRUE PHYSICAL WAVY LINE!
-            const wavyText = text.split('').map(c => (c.trim() ? c + '\u0330' : c)).join('');
             runs.push(new docx_1.TextRun({
-                text: wavyText,
+                text,
                 font: "SimHei",
                 bold: true,
                 size: 22,
@@ -90,7 +86,7 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
                 text,
                 font: "SimHei",
                 bold: true,
-                size: 23,
+                size: 22,
                 color: "000000"
             }));
         }
@@ -175,7 +171,7 @@ app.get('/api/export/download-docx', async (req, res) => {
         // Paper Header
         children.push(new docx_1.Paragraph({
             alignment: docx_1.AlignmentType.CENTER,
-            spacing: { line: 440, after: 240 },
+            spacing: { line: 360, after: 200 },
             children: [
                 new docx_1.TextRun({
                     text: paperTitle,
@@ -187,7 +183,7 @@ app.get('/api/export/download-docx', async (req, res) => {
             ]
         }), new docx_1.Paragraph({
             alignment: docx_1.AlignmentType.CENTER,
-            spacing: { line: 360, after: 400 },
+            spacing: { line: 320, after: 400 },
             children: [
                 new docx_1.TextRun({
                     text: `卷面规格：A4 标准排版 | 试题总数：${selectedQuestions.length} 道 | 满分：${totalScore} 分`,
@@ -205,7 +201,8 @@ app.get('/api/export/download-docx', async (req, res) => {
             const hasAnswer = isAnswerIncludedMap[qKey] !== false;
             // Question Title Line
             children.push(new docx_1.Paragraph({
-                spacing: { line: 440, before: 240, after: 120 },
+                alignment: docx_1.AlignmentType.LEFT,
+                spacing: { line: 360, before: 240, after: 120 },
                 children: [
                     new docx_1.TextRun({
                         text: `第 ${index + 1} 题 【${item.year || ''} ${item.district || ''} ${item.examCategory || ''}】 (${q.score || 2}分)`,
@@ -219,7 +216,8 @@ app.get('/api/export/download-docx', async (req, res) => {
             // Passage Box
             if (hasPassage) {
                 children.push(new docx_1.Paragraph({
-                    spacing: { line: 440, before: 140, after: 140 },
+                    alignment: docx_1.AlignmentType.LEFT,
+                    spacing: { line: 360, before: 120, after: 120 },
                     children: [
                         new docx_1.TextRun({ text: "【阅读材料】", font: "SimHei", bold: true, size: 21, color: "0284c7" }),
                         new docx_1.TextRun({ text: "", break: 1 }),
@@ -230,7 +228,8 @@ app.get('/api/export/download-docx', async (req, res) => {
             // Stem
             const cleanStemText = (q.stem || '').replace(/^(\d+[\.、]?\s*)/, '');
             children.push(new docx_1.Paragraph({
-                spacing: { line: 440, before: 120, after: 140 },
+                alignment: docx_1.AlignmentType.LEFT,
+                spacing: { line: 360, before: 100, after: 120 },
                 children: [
                     new docx_1.TextRun({ text: `${index + 1}. `, font: "SimHei", bold: true, size: 22, color: "0f172a" }),
                     ...parseHtmlToDocxRuns(cleanStemText, "0f172a")
@@ -240,7 +239,8 @@ app.get('/api/export/download-docx', async (req, res) => {
             if (q.options && q.options.length > 0) {
                 q.options.forEach((opt) => {
                     children.push(new docx_1.Paragraph({
-                        spacing: { line: 360, before: 60, after: 60 },
+                        alignment: docx_1.AlignmentType.LEFT,
+                        spacing: { line: 320, before: 40, after: 40 },
                         indent: { left: 360 },
                         children: parseHtmlToDocxRuns(opt, "334155")
                     }));
@@ -249,14 +249,16 @@ app.get('/api/export/download-docx', async (req, res) => {
             // Answer & Analysis
             if (hasAnswer) {
                 children.push(new docx_1.Paragraph({
-                    spacing: { line: 440, before: 160, after: 100 },
+                    alignment: docx_1.AlignmentType.LEFT,
+                    spacing: { line: 360, before: 160, after: 80 },
                     children: [
                         new docx_1.TextRun({ text: "🎯 【参考答案】", font: "SimHei", bold: true, size: 21, color: "166534" }),
                         new docx_1.TextRun({ text: "", break: 1 }),
                         ...parseHtmlToDocxRuns(q.answer || '', "14532d")
                     ]
                 }), new docx_1.Paragraph({
-                    spacing: { line: 440, before: 100, after: 200 },
+                    alignment: docx_1.AlignmentType.LEFT,
+                    spacing: { line: 360, before: 80, after: 200 },
                     children: [
                         new docx_1.TextRun({ text: "💡 【详细解析与考点说明】", font: "SimHei", bold: true, size: 21, color: "166534" }),
                         new docx_1.TextRun({ text: "", break: 1 }),
@@ -267,7 +269,8 @@ app.get('/api/export/download-docx', async (req, res) => {
             else {
                 if (!q.options || q.options.length === 0) {
                     children.push(new docx_1.Paragraph({
-                        spacing: { line: 360, before: 300, after: 300 },
+                        alignment: docx_1.AlignmentType.LEFT,
+                        spacing: { line: 320, before: 300, after: 300 },
                         children: [
                             new docx_1.TextRun({ text: "_________________________________________________________________________________", font: "SimSun", size: 20, color: "cbd5e1" })
                         ]
