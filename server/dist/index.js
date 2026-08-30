@@ -43,7 +43,7 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
                 font: "SimSun",
                 size: 22,
                 color: defaultColor,
-                underline: { type: docx_1.UnderlineType.DOTTEDHEAVY }
+                emphasisMark: { type: docx_1.EmphasisMarkType.DOT }
             }));
         }
         else if (/<span[^>]*class="[^"]*dot-emphasis[^"]*"/i.test(match)) {

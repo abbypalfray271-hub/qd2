@@ -12,6 +12,7 @@ import {
   BorderStyle,
   AlignmentType,
   UnderlineType,
+  EmphasisMarkType,
   HeadingLevel
 } from 'docx';
 
@@ -57,7 +58,7 @@ function parseHtmlToDocxRuns(htmlText: string, defaultColor = "0f172a"): TextRun
         font: "SimSun",
         size: 22,
         color: defaultColor,
-        underline: { type: UnderlineType.DOTTEDHEAVY }
+        emphasisMark: { type: EmphasisMarkType.DOT }
       }));
     } else if (/<span[^>]*class="[^"]*dot-emphasis[^"]*"/i.test(match)) {
       const text = match.replace(/<[^>]+>/g, '');
