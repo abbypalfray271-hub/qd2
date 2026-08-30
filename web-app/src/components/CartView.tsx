@@ -107,150 +107,8 @@ export const CartView: React.FC<CartViewProps> = ({
     }, 0);
   }, [selectedQuestions]);
 
-  // Helper to format HTML strings for PDF (Foreground SVG vector wave & Chromium ::after dots)
-  const formatForPDF = (htmlStr?: string): string => {
-    if (!htmlStr) return '';
-    let s = htmlStr;
-
-    // 0. Convert raw newline \n into HTML physical <br/> breaks
-    s = s.replace(/\r?\n/g, '<br/>');
-
-    // 1. Bold <b> and <strong>
-    s = s.replace(/<b>(.*?)<\/b>/gi, '<strong class="exam-bold" style="font-weight: 900; color: #0f172a;">$1</strong>');
-    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong class="exam-bold" style="font-weight: 900; color: #0f172a;">$1</strong>');
-
-    // 2. Wavy underline -> SVG background image Data-URI + inline-block (100% renders crisp blue wavy line in html2canvas PDF)
-    const svgWaveNode = '<span class="wavy-underline" style="display:inline-block; background-image: url(\'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'8\' height=\'5\' viewBox=\'0 0 8 5\'%3E%3Cpath d=\'M 0,2.5 Q 2,0 4,2.5 T 8,2.5\' fill=\'none\' stroke=\'%230284c7\' stroke-width=\'1.8\' stroke-linecap=\'round\'/%3E%3C/svg%3E\'); background-position: bottom left; background-repeat: repeat-x; padding-bottom: 3px; color: #0284c7;">$1</span>';
-    s = s.replace(/<u[^>]*style="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, svgWaveNode);
-    s = s.replace(/<u[^>]*class="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, svgWaveNode);
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, svgWaveNode);
-
-    // 3. Standard underline <u>
-    s = s.replace(/<u>(.*?)<\/u>/gi, '<u class="underline" style="text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a;">$1</u>');
-
-    // 4. Dot emphasis (加点字/着重号) <span class="dot-char">
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<span class="dot-char" style="display:inline-block; position:relative; margin:0 1px; color:#0f172a;">$1</span>');
-    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '<span class="dot-emphasis">$1</span>');
-
-    // 5. Blank underline
-    s = s.replace(/<span class="blank-underline">(.*?)<\/span>/gi, '<span class="blank-underline" style="text-decoration: underline !important; color: #0f172a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>');
-
-    return s;
-  };
-
-  // Helper to format HTML strings for Word (.doc MSO Filter Engine)
-  const formatForWord = (htmlStr?: string): string => {
-    if (!htmlStr) return '';
-    let s = htmlStr;
-
-    // 0. Convert raw newline \n into HTML physical <br/> breaks
-    s = s.replace(/\r?\n/g, '<br/>');
-
-    // 1. Bold <b> and <strong> -> HeiTi fallback for Word
-    s = s.replace(/<b>(.*?)<\/b>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
-    s = s.replace(/<strong>(.*?)<\/strong>/gi, '<strong style="font-weight: 900; mso-bidi-font-weight: bold; font-family: \'SimHei\', \'Microsoft YaHei\', sans-serif; color: #0f172a;">$1</strong>');
-
-    // 2. Wavy underline -> Pure Word MSO Wavy Underline
-    s = s.replace(/<u[^>]*style="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, '<u style="text-underline: wave; mso-text-underline-style: wave; color: #0284c7;">$1</u>');
-    s = s.replace(/<u[^>]*class="[^"]*wavy[^"]*"[^>]*>(.*?)<\/u>/gi, '<u style="text-underline: wave; mso-text-underline-style: wave; color: #0284c7;">$1</u>');
-    s = s.replace(/<u style="text-decoration:\s*wavy;?">(.*?)<\/u>/gi, '<u style="text-underline: wave; mso-text-underline-style: wave; color: #0284c7;">$1</u>');
-
-    // 3. Standard underline <u> -> Word official text-underline: thick & mso-text-underline-style: thick (Word 100% renders thick bold straight underline)
-    s = s.replace(/<u>(.*?)<\/u>/gi, '<u style="text-underline: thick; mso-text-underline-style: thick; text-decoration: underline; text-decoration-thickness: 3px; color: #0f172a;">$1</u>');
-
-    // 4. Dot emphasis (加点字/着重号) -> Word & WPS Native Heavy Dotted Underline
-    s = s.replace(/<span class="dot-char">(.*?)<\/span>/gi, '<u style="text-underline: dotted-heavy; color: #0f172a;">$1</u>');
-    s = s.replace(/<span class="dot-emphasis">(.*?)<\/span>/gi, '$1');
-
-    // 5. Blank underline
-    s = s.replace(/<span class="blank-underline">(.*?)<\/span>/gi, '<u style="text-underline: single; color: #0f172a;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>');
-
-    return s;
-  };
-
-  // A4 Document HTML Builder (Dynamic based on target: 'pdf' or 'word')
-  const buildA4HTML = (target: 'pdf' | 'word' = 'word') => {
-    const formatter = target === 'pdf' ? formatForPDF : formatForWord;
-    let html = '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">';
-    html += '<meta name="ProgId" content="Word.Document">';
-    html += '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->';
-    html += '<title>' + paperTitle + '</title>';
-    html += '<style>';
-    html += '@page { size: A4 portrait; margin: 20mm 15mm; }';
-    html += '@page WordSection1 { size: 595.3pt 841.9pt; margin: 72.0pt 54.0pt 72.0pt 54.0pt; mso-header-margin: 36.0pt; mso-footer-margin: 36.0pt; }';
-    html += 'div.WordSection1 { page: WordSection1; }';
-    html += 'body { font-family: "SimSun", "Songti SC", serif; font-size: 11pt; line-height: 1.6; color: #1e293b; background: #ffffff; margin: 0; padding: 0; }';
-    html += '.paper-container { max-width: 800px; margin: 0 auto; padding: 20px; }';
-    html += '.paper-header { text-align: center; margin-bottom: 25px; border-bottom: 2pt solid #0284c7; padding-bottom: 12px; }';
-    html += '.paper-title { font-size: 18pt; font-weight: bold; color: #0f172a; margin-bottom: 8px; }';
-    html += '.paper-info { font-size: 10.5pt; color: #64748b; }';
-    html += '.q-card { margin-bottom: 20pt; border-bottom: 1px dashed #e2e8f0; padding-bottom: 15pt; page-break-inside: auto; }';
-    html += '.q-header { font-weight: bold; font-size: 11pt; color: #0369a1; margin-bottom: 8pt; }';
-    html += '.passage-box { background: #f8fafc; border-left: 3.5pt solid #0284c7; padding: 10pt 12pt; margin-bottom: 12pt; font-size: 10.5pt; line-height: 2.2; white-space: pre-wrap; }';
-    html += '.stem { font-size: 11pt; font-weight: bold; margin-bottom: 8pt; color: #0f172a; line-height: 1.6; }';
-    html += '.option-line { margin-left: 18pt; font-size: 10.5pt; margin-bottom: 4pt; color: #334155; }';
-    html += '.answer-card { margin-top: 12pt; background: #f0fdf4; border: 1pt solid #bbf7d0; padding: 10pt; border-radius: 4pt; }';
-    html += '.ans-title { font-weight: bold; color: #166534; font-size: 10.5pt; }';
-    html += '.ans-content { color: #14532d; font-size: 10.5pt; margin-top: 4pt; }';
-    html += '.blank-line { height: 40pt; border-bottom: 1px dashed #cbd5e1; margin-top: 8pt; }';
-    html += '.dot-char { display: inline-block; position: relative; margin: 0 1px; }';
-    html += '.dot-char::after { content: "●"; position: absolute; bottom: -0.55em; left: 50%; transform: translateX(-50%); font-size: 0.55em; color: #0f172a; font-weight: 900; line-height: 1; }';
-    html += 'u, .underline { text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a; }';
-    html += '.wavy-underline { text-decoration: underline wavy #0284c7 !important; text-underline-offset: 3px; color: #0284c7; }';
-    html += '.blank-underline { display: inline-block; min-width: 50pt; border-bottom: 1.5pt solid #0f172a; }';
-    html += '.exam-bold, b, strong { font-weight: bold !important; color: #0f172a !important; }';
-    html += '@media print { .mobile-tip-banner { display: none !important; } }';
-    html += '</style></head><body>';
-
-    html += '<div class="mobile-tip-banner" style="background:#e0f2fe; border:1px solid #bae6fd; color:#0369a1; text-align:center; padding:12px; font-size:13px; line-height:1.6; border-radius:8px; margin:12px auto; max-width:760px; font-family:-apple-system,BlinkMacSystemFont,sans-serif;">📱 <strong>手机端保存指南：</strong><br/>1. 点击 <strong>[📤 分享]</strong> 按钮选择 <strong>[保存到“文件”]</strong> 或 <strong>[在 WPS/Word 中打开]</strong>；<br/>2. 或点击右侧按钮：<button onclick="window.print()" style="background:#0284c7; color:#fff; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; margin-left:6px; cursor:pointer;">🖨️ 唤起手机打印 / 另存为 PDF</button></div>';
-    html += '<div class="WordSection1"><div class="paper-container">';
-    html += '<div class="paper-header">';
-    html += '<div class="paper-title">' + paperTitle + '</div>';
-    html += '<div class="paper-info">卷面规格：A4 标准排版 | 试题总数：' + selectedQuestions.length + ' 道 | 满分：' + totalScore + ' 分</div>';
-    html += '</div>';
-
-    selectedQuestions.forEach((item, index) => {
-      const { qKey, question: q } = item;
-      const hasPassage = isPassageIncluded(qKey) && q.passage;
-      const hasAnswer = isAnswerIncluded(qKey);
-
-      html += '<div class="q-card">';
-      html += '<div class="q-header">第 ' + (index + 1) + ' 题 【' + item.year + ' ' + item.district + ' ' + item.examCategory + '】 (' + (q.score || 2) + '分)</div>';
-
-      if (hasPassage) {
-        html += '<div class="passage-box"><strong>【阅读材料】</strong><br/>' + formatter(q.passage) + '</div>';
-      }
-
-      html += '<div class="stem">' + formatter(cleanStem(q.stem)) + '</div>';
-
-      if (q.options && q.options.length > 0) {
-        q.options.forEach(opt => {
-          html += '<div class="option-line">' + formatter(opt) + '</div>';
-        });
-      }
-
-      if (hasAnswer) {
-        html += '<div class="answer-card">';
-        html += '<div class="ans-title">🎯 【参考答案】</div>';
-        html += '<div class="ans-content">' + formatter(q.answer) + '</div>';
-        html += '<div class="ans-title" style="margin-top:8px;">💡 【详细解析与考点说明】</div>';
-        html += '<div class="ans-content">' + formatter(q.analysis) + '</div>';
-        html += '</div>';
-      } else {
-        if (!q.options || q.options.length === 0) {
-          html += '<div class="blank-line"></div>';
-        }
-      }
-
-      html += '</div>';
-    });
-
-    html += '</div></div></body></html>';
-    return html;
-  };
-
-  // Export A4 Word Document (.docx) via Server-side Binary Stream API
-  const handleExportA4Word = async () => {
+  // Export A4 Word Document (.docx) via Native Form POST Submission
+  const handleExportA4Word = () => {
     if (selectedQuestions.length === 0) return;
 
     const isPassageIncludedMap: Record<string, boolean> = {};
@@ -260,49 +118,33 @@ export const CartView: React.FC<CartViewProps> = ({
       isAnswerIncludedMap[item.qKey] = isAnswerIncluded(item.qKey);
     });
 
-    try {
-      const payload = {
-        paperTitle,
-        selectedQuestions,
-        totalScore,
-        isPassageIncludedMap,
-        isAnswerIncludedMap
-      };
+    const payload = {
+      paperTitle,
+      selectedQuestions,
+      totalScore,
+      isPassageIncludedMap,
+      isAnswerIncludedMap
+    };
 
-      const res = await fetch('/api/export/docx', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    // Native Form POST triggers browser Content-Disposition download popup directly on both mobile and PC
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/api/export/docx';
+    form.target = '_self';
 
-      if (!res.ok) throw new Error('Server docx export failed');
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${paperTitle}_A4标准排版.docx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-    } catch (err) {
-      console.warn("Server docx export failed, using client fallback:", err);
-      const htmlContent = buildA4HTML('word');
-      const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = paperTitle + '_A4标准排版.doc';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   };
 
-  // Export A4 PDF directly via Server API / Native Print Response
-  const handleExportA4PDF = async () => {
+  // Export A4 PDF directly via Native Form POST Submission
+  const handleExportA4PDF = () => {
     if (selectedQuestions.length === 0) return;
 
     const isPassageIncludedMap: Record<string, boolean> = {};
@@ -312,43 +154,28 @@ export const CartView: React.FC<CartViewProps> = ({
       isAnswerIncludedMap[item.qKey] = isAnswerIncluded(item.qKey);
     });
 
-    try {
-      const win = window.open('', '_blank');
-      if (!win) return;
+    const payload = {
+      paperTitle,
+      selectedQuestions,
+      totalScore,
+      isPassageIncludedMap,
+      isAnswerIncludedMap
+    };
 
-      const payload = {
-        paperTitle,
-        selectedQuestions,
-        totalScore,
-        isPassageIncludedMap,
-        isAnswerIncludedMap
-      };
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/api/export/pdf';
+    form.target = '_blank';
 
-      const res = await fetch('/api/export/pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
 
-      if (!res.ok) throw new Error('Server PDF export failed');
-      const html = await res.text();
-
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
-    } catch (err) {
-      console.warn("Server PDF export failed, using client fallback:", err);
-      const htmlContent = buildA4HTML('pdf');
-      const win = window.open('', '_blank');
-      if (win) {
-        win.document.open();
-        win.document.write(htmlContent);
-        win.document.close();
-        setTimeout(() => {
-          try { win.focus(); win.print(); } catch (e) {}
-        }, 500);
-      }
-    }
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   };
 
   return (
@@ -644,3 +471,5 @@ export const CartView: React.FC<CartViewProps> = ({
     </div>
   );
 };
+
+export default CartView;

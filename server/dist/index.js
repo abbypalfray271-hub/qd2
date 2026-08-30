@@ -86,10 +86,23 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
     }
     return runs;
 }
+// Helper to extract request data whether sent via JSON fetch or Form POST payload
+function getRequestData(req) {
+    if (req.body && req.body.payload) {
+        try {
+            return typeof req.body.payload === 'string' ? JSON.parse(req.body.payload) : req.body.payload;
+        }
+        catch (e) {
+            return req.body;
+        }
+    }
+    return req.body || {};
+}
 // POST /api/export/docx - Generate Native OpenXML .docx
 app.post('/api/export/docx', async (req, res) => {
     try {
-        const { paperTitle = "2026年青岛市中考语文专项练习组卷", selectedQuestions = [], totalScore = 115, isPassageIncludedMap = {}, isAnswerIncludedMap = {} } = req.body;
+        const data = getRequestData(req);
+        const { paperTitle = "2026年青岛市中考语文专项练习组卷", selectedQuestions = [], totalScore = 115, isPassageIncludedMap = {}, isAnswerIncludedMap = {} } = data;
         const children = [];
         // Paper Header
         children.push(new docx_1.Paragraph({
@@ -225,7 +238,8 @@ app.post('/api/export/docx', async (req, res) => {
 // POST /api/export/pdf - Native A4 HTML Print Response
 app.post('/api/export/pdf', (req, res) => {
     try {
-        const { paperTitle = "2026年青岛市中考语文专项练习组卷", selectedQuestions = [], totalScore = 115, isPassageIncludedMap = {}, isAnswerIncludedMap = {} } = req.body;
+        const data = getRequestData(req);
+        const { paperTitle = "2026年青岛市中考语文专项练习组卷", selectedQuestions = [], totalScore = 115, isPassageIncludedMap = {}, isAnswerIncludedMap = {} } = data;
         let html = `<!DOCTYPE html>
 <html>
 <head>
@@ -253,7 +267,6 @@ app.post('/api/export/pdf', (req, res) => {
     u, .underline { text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a; }
     .wavy-underline { text-decoration: underline wavy #0284c7 !important; text-underline-offset: 3px; color: #0284c7; }
     .blank-underline { display: inline-block; min-width: 50pt; border-bottom: 1.5pt solid #0f172a; }
-    @media print { .no-print { display: none !important; } }
   </style>
   <script>
     window.onload = function() {
@@ -262,9 +275,6 @@ app.post('/api/export/pdf', (req, res) => {
   </script>
 </head>
 <body>
-  <div class="no-print" style="background:#e0f2fe; border:1px solid #bae6fd; color:#0369a1; text-align:center; padding:12px; font-size:13px; margin:12px auto; max-width:800px; border-radius:8px;">
-    📱 <strong>手机端保存提示：</strong>已为您自动唤起系统打印面板。在弹出的打印预览菜单中，直接选择 <strong>[保存为 PDF]</strong> 或在 iPhone 上点击右上角 <strong>[导出到文件]</strong> 即可完美下载保存。
-  </div>
   <div class="paper-container">
     <div class="paper-header">
       <div class="paper-title">${paperTitle}</div>
