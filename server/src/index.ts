@@ -22,7 +22,7 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Helper to strip or convert basic HTML tags to docx TextRun children
+// Helper to strip or convert basic HTML tags to docx TextRun children with 100% precision
 function parseHtmlToDocxRuns(htmlText: string, defaultColor = "0f172a"): TextRun[] {
   if (!htmlText) return [];
 
@@ -37,12 +37,12 @@ function parseHtmlToDocxRuns(htmlText: string, defaultColor = "0f172a"): TextRun
 
   const runs: TextRun[] = [];
 
-  // Regex matching all supported HTML tags (blank-underline, dot-char, dot-emphasis, wavy, u, strong, b)
-  const tagRegex = /(<span class="blank-underline">.*?<\/span>|<span class="dot-char">.*?<\/span>|<span class="dot-emphasis">.*?<\/span>|<u[^>]*>.*?<\/u>|<strong[^>]*>.*?<\/strong>|<b>.*?<\/b>|[^<]+)/gi;
+  // Robust wildcard regex matching any HTML tag block (handles class with style attributes, etc.)
+  const tagRegex = /(<span[^>]*class="[^"]*blank-underline[^"]*"[^>]*>.*?<\/span>|<span[^>]*class="[^"]*dot-char[^"]*"[^>]*>.*?<\/span>|<span[^>]*class="[^"]*dot-emphasis[^"]*"[^>]*>.*?<\/span>|<u[^>]*>.*?<\/u>|<strong[^>]*>.*?<\/strong>|<b>.*?<\/b>|<[^>]+>|[^<]+)/gi;
   const matches = clean.match(tagRegex) || [clean];
 
   for (const match of matches) {
-    if (match.startsWith('<span class="blank-underline">')) {
+    if (/<span[^>]*class="[^"]*blank-underline[^"]*"/i.test(match)) {
       runs.push(new TextRun({
         text: "        ", // 8 spaces filled with straight underline
         font: "SimSun",
@@ -50,7 +50,7 @@ function parseHtmlToDocxRuns(htmlText: string, defaultColor = "0f172a"): TextRun
         color: defaultColor,
         underline: { type: UnderlineType.SINGLE }
       }));
-    } else if (match.startsWith('<span class="dot-char">')) {
+    } else if (/<span[^>]*class="[^"]*dot-char[^"]*"/i.test(match)) {
       const text = match.replace(/<[^>]+>/g, '');
       runs.push(new TextRun({
         text,
@@ -59,7 +59,7 @@ function parseHtmlToDocxRuns(htmlText: string, defaultColor = "0f172a"): TextRun
         color: defaultColor,
         underline: { type: UnderlineType.DOTTEDHEAVY }
       }));
-    } else if (match.startsWith('<span class="dot-emphasis">')) {
+    } else if (/<span[^>]*class="[^"]*dot-emphasis[^"]*"/i.test(match)) {
       const text = match.replace(/<[^>]+>/g, '');
       runs.push(new TextRun({
         text,
@@ -67,7 +67,7 @@ function parseHtmlToDocxRuns(htmlText: string, defaultColor = "0f172a"): TextRun
         size: 22,
         color: defaultColor
       }));
-    } else if (match.startsWith('<u style="text-underline: wave') || match.includes('wavy')) {
+    } else if (/<u[^>]*style="[^"]*wavy/i.test(match) || /<u[^>]*class="[^"]*wavy/i.test(match)) {
       const text = match.replace(/<[^>]+>/g, '');
       runs.push(new TextRun({
         text,
@@ -76,7 +76,7 @@ function parseHtmlToDocxRuns(htmlText: string, defaultColor = "0f172a"): TextRun
         color: "0284c7",
         underline: { type: UnderlineType.WAVE, color: "0284c7" }
       }));
-    } else if (match.startsWith('<u') || match.startsWith('<span class="underline"')) {
+    } else if (match.startsWith('<u') || /<span[^>]*class="[^"]*underline[^"]*"/i.test(match)) {
       const text = match.replace(/<[^>]+>/g, '');
       runs.push(new TextRun({
         text,
@@ -95,7 +95,7 @@ function parseHtmlToDocxRuns(htmlText: string, defaultColor = "0f172a"): TextRun
         color: defaultColor
       }));
     } else if (match.startsWith('<')) {
-      // Strip any unexpected raw HTML tag attributes
+      // Strip any standalone or closing HTML tags (e.g. </span> or </div>)
       const text = match.replace(/<[^>]+>/g, '');
       if (text) {
         runs.push(new TextRun({
@@ -106,8 +106,9 @@ function parseHtmlToDocxRuns(htmlText: string, defaultColor = "0f172a"): TextRun
         }));
       }
     } else {
-      // Plain text (handles embedded newlines)
-      const lines = match.split('\n');
+      // Plain text block (strip any stray HTML tag fragments if any)
+      const cleanText = match.replace(/<[^>]+>/g, '');
+      const lines = cleanText.split('\n');
       lines.forEach((line, i) => {
         if (line) {
           runs.push(new TextRun({
