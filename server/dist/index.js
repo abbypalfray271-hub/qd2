@@ -39,7 +39,7 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
         }
         else if (/<span[^>]*class="[^"]*dot-char[^"]*"/i.test(match)) {
             const text = match.replace(/<[^>]+>/g, '');
-            // High-contrast HeiTi bold + Unicode combining dot below + official emphasisMark + dotted heavy underline for maximum vividness
+            // High-contrast HeiTi bold + Unicode combining dot below + official emphasisMark (NO extra underline!)
             const dottedText = text.split('').map(c => (c.trim() ? c + '\u0323' : c)).join('');
             runs.push(new docx_1.TextRun({
                 text: dottedText,
@@ -47,8 +47,7 @@ function parseHtmlToDocxRuns(htmlText, defaultColor = "0f172a") {
                 bold: true,
                 size: 23,
                 color: "0f172a",
-                emphasisMark: { type: docx_1.EmphasisMarkType.DOT },
-                underline: { type: docx_1.UnderlineType.DOTTEDHEAVY, color: "0f172a" }
+                emphasisMark: { type: docx_1.EmphasisMarkType.DOT }
             }));
         }
         else if (/<span[^>]*class="[^"]*dot-emphasis[^"]*"/i.test(match)) {
@@ -174,7 +173,7 @@ app.get('/api/export/download-docx', async (req, res) => {
         // Paper Header
         children.push(new docx_1.Paragraph({
             alignment: docx_1.AlignmentType.CENTER,
-            spacing: { after: 200 },
+            spacing: { line: 360, after: 200 },
             children: [
                 new docx_1.TextRun({
                     text: paperTitle,
@@ -186,7 +185,7 @@ app.get('/api/export/download-docx', async (req, res) => {
             ]
         }), new docx_1.Paragraph({
             alignment: docx_1.AlignmentType.CENTER,
-            spacing: { after: 400 },
+            spacing: { line: 320, after: 400 },
             children: [
                 new docx_1.TextRun({
                     text: `卷面规格：A4 标准排版 | 试题总数：${selectedQuestions.length} 道 | 满分：${totalScore} 分`,
@@ -204,7 +203,7 @@ app.get('/api/export/download-docx', async (req, res) => {
             const hasAnswer = isAnswerIncludedMap[qKey] !== false;
             // Question Title Line
             children.push(new docx_1.Paragraph({
-                spacing: { before: 240, after: 120 },
+                spacing: { line: 360, before: 240, after: 120 },
                 children: [
                     new docx_1.TextRun({
                         text: `第 ${index + 1} 题 【${item.year || ''} ${item.district || ''} ${item.examCategory || ''}】 (${q.score || 2}分)`,
@@ -218,7 +217,7 @@ app.get('/api/export/download-docx', async (req, res) => {
             // Passage Box
             if (hasPassage) {
                 children.push(new docx_1.Paragraph({
-                    spacing: { before: 100, after: 100 },
+                    spacing: { line: 360, before: 120, after: 120 },
                     children: [
                         new docx_1.TextRun({ text: "【阅读材料】", font: "SimHei", bold: true, size: 21, color: "0284c7" }),
                         new docx_1.TextRun({ text: "", break: 1 }),
@@ -229,7 +228,7 @@ app.get('/api/export/download-docx', async (req, res) => {
             // Stem
             const cleanStemText = (q.stem || '').replace(/^(\d+[\.、]?\s*)/, '');
             children.push(new docx_1.Paragraph({
-                spacing: { before: 80, after: 120 },
+                spacing: { line: 360, before: 100, after: 120 },
                 children: [
                     new docx_1.TextRun({ text: `${index + 1}. `, font: "SimHei", bold: true, size: 22, color: "0f172a" }),
                     ...parseHtmlToDocxRuns(cleanStemText, "0f172a")
@@ -239,7 +238,7 @@ app.get('/api/export/download-docx', async (req, res) => {
             if (q.options && q.options.length > 0) {
                 q.options.forEach((opt) => {
                     children.push(new docx_1.Paragraph({
-                        spacing: { before: 40, after: 40 },
+                        spacing: { line: 320, before: 40, after: 40 },
                         indent: { left: 360 },
                         children: parseHtmlToDocxRuns(opt, "334155")
                     }));
@@ -248,14 +247,14 @@ app.get('/api/export/download-docx', async (req, res) => {
             // Answer & Analysis
             if (hasAnswer) {
                 children.push(new docx_1.Paragraph({
-                    spacing: { before: 160, after: 80 },
+                    spacing: { line: 360, before: 160, after: 80 },
                     children: [
                         new docx_1.TextRun({ text: "🎯 【参考答案】", font: "SimHei", bold: true, size: 21, color: "166534" }),
                         new docx_1.TextRun({ text: "", break: 1 }),
                         ...parseHtmlToDocxRuns(q.answer || '', "14532d")
                     ]
                 }), new docx_1.Paragraph({
-                    spacing: { before: 80, after: 200 },
+                    spacing: { line: 360, before: 80, after: 200 },
                     children: [
                         new docx_1.TextRun({ text: "💡 【详细解析与考点说明】", font: "SimHei", bold: true, size: 21, color: "166534" }),
                         new docx_1.TextRun({ text: "", break: 1 }),
@@ -266,7 +265,7 @@ app.get('/api/export/download-docx', async (req, res) => {
             else {
                 if (!q.options || q.options.length === 0) {
                     children.push(new docx_1.Paragraph({
-                        spacing: { before: 300, after: 300 },
+                        spacing: { line: 320, before: 300, after: 300 },
                         children: [
                             new docx_1.TextRun({ text: "_________________________________________________________________________________", font: "SimSun", size: 20, color: "cbd5e1" })
                         ]
@@ -320,7 +319,7 @@ app.get('/api/export/download-pdf', (req, res) => {
   <title>${paperTitle}</title>
   <style>
     @page { size: A4 portrait; margin: 15mm 15mm; }
-    body { font-family: "SimSun", "Songti SC", serif; font-size: 11pt; line-height: 1.6; color: #1e293b; background: #ffffff; margin: 0; padding: 0; }
+    body { font-family: "SimSun", "Songti SC", serif; font-size: 11pt; line-height: 1.8; color: #1e293b; background: #ffffff; margin: 0; padding: 0; }
     .paper-container { max-width: 800px; margin: 0 auto; padding: 20px; }
     .paper-header { text-align: center; margin-bottom: 25px; border-bottom: 2pt solid #0284c7; padding-bottom: 12px; }
     .paper-title { font-size: 18pt; font-weight: bold; color: #0f172a; margin-bottom: 8px; font-family: "SimHei", sans-serif; }
@@ -328,17 +327,17 @@ app.get('/api/export/download-pdf', (req, res) => {
     .q-card { margin-bottom: 20pt; border-bottom: 1px dashed #e2e8f0; padding-bottom: 15pt; page-break-inside: avoid; }
     .q-header { font-weight: bold; font-size: 11pt; color: #0369a1; margin-bottom: 8pt; font-family: "SimHei", sans-serif; }
     .passage-box { background: #f8fafc; border-left: 3.5pt solid #0284c7; padding: 10pt 12pt; margin-bottom: 12pt; font-size: 10.5pt; line-height: 2.2; white-space: pre-wrap; }
-    .stem { font-size: 11pt; font-weight: bold; margin-bottom: 8pt; color: #0f172a; line-height: 1.6; }
+    .stem { font-size: 11pt; font-weight: bold; margin-bottom: 8pt; color: #0f172a; line-height: 1.8; }
     .option-line { margin-left: 18pt; font-size: 10.5pt; margin-bottom: 4pt; color: #334155; }
     .answer-card { margin-top: 12pt; background: #f0fdf4; border: 1pt solid #bbf7d0; padding: 10pt; border-radius: 4pt; }
     .ans-title { font-weight: bold; color: #166534; font-size: 10.5pt; font-family: "SimHei", sans-serif; }
-    .ans-content { color: #14532d; font-size: 10.5pt; margin-top: 4pt; }
+    .ans-content { color: #14532d; font-size: 10.5pt; margin-top: 4pt; line-height: 1.8; }
     .blank-line { height: 40pt; border-bottom: 1px dashed #cbd5e1; margin-top: 8pt; }
     .dot-char { display: inline-block; position: relative; margin: 0 1px; }
     .dot-char::after { content: "●"; position: absolute; bottom: -0.55em; left: 50%; transform: translateX(-50%); font-size: 0.55em; color: #0f172a; font-weight: 900; line-height: 1; }
-    u, .underline { text-decoration: underline !important; text-underline-offset: 3px; color: #0f172a; }
-    .wavy-underline { text-decoration: underline wavy #0284c7 !important; text-underline-offset: 3px; color: #0284c7; }
-    .blank-underline { display: inline-block; min-width: 50pt; border-bottom: 1.5pt solid #0f172a; }
+    u, .underline { text-decoration: underline !important; text-underline-offset: 5.5px !important; color: #0f172a; }
+    .wavy-underline { text-decoration: underline wavy #0284c7 !important; text-underline-offset: 5.5px !important; color: #0284c7; }
+    .blank-underline { display: inline-block; min-width: 50pt; border-bottom: 1.5pt solid #0284c7; text-underline-offset: 5.5px !important; }
   </style>
   <script>
     window.onload = function() {
