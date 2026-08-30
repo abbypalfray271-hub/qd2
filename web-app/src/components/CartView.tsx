@@ -107,8 +107,8 @@ export const CartView: React.FC<CartViewProps> = ({
     }, 0);
   }, [selectedQuestions]);
 
-  // Export A4 Word Document (.docx) via Native Form POST Submission
-  const handleExportA4Word = () => {
+  // Export A4 Word Document (.docx) via Prepare POST + GET Download URL (100% Mobile & iOS compatible)
+  const handleExportA4Word = async () => {
     if (selectedQuestions.length === 0) return;
 
     const isPassageIncludedMap: Record<string, boolean> = {};
@@ -126,25 +126,27 @@ export const CartView: React.FC<CartViewProps> = ({
       isAnswerIncludedMap
     };
 
-    // Native Form POST triggers browser Content-Disposition download popup directly on both mobile and PC
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/api/export/docx';
-    form.target = '_self';
-
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    input.value = JSON.stringify(payload);
-    form.appendChild(input);
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+    try {
+      const res = await fetch('/api/export/prepare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.taskId) {
+        // Trigger GET request navigation - 100% pops native iOS Safari / Chrome download prompt
+        window.location.href = `/api/export/download-docx?id=${data.taskId}`;
+      } else {
+        alert('准备导出任务失败，请重试');
+      }
+    } catch (err) {
+      console.error("Export error:", err);
+      alert('导出请求失败，请检查网络设置');
+    }
   };
 
-  // Export A4 PDF directly via Native Form POST Submission
-  const handleExportA4PDF = () => {
+  // Export A4 PDF via Prepare POST + GET Print Window (100% Mobile & iOS compatible)
+  const handleExportA4PDF = async () => {
     if (selectedQuestions.length === 0) return;
 
     const isPassageIncludedMap: Record<string, boolean> = {};
@@ -162,20 +164,22 @@ export const CartView: React.FC<CartViewProps> = ({
       isAnswerIncludedMap
     };
 
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/api/export/pdf';
-    form.target = '_blank';
-
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    input.value = JSON.stringify(payload);
-    form.appendChild(input);
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+    try {
+      const res = await fetch('/api/export/prepare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.taskId) {
+        window.open(`/api/export/download-pdf?id=${data.taskId}`, '_blank');
+      } else {
+        alert('准备打印任务失败，请重试');
+      }
+    } catch (err) {
+      console.error("Print error:", err);
+      alert('打印请求失败，请检查网络设置');
+    }
   };
 
   return (

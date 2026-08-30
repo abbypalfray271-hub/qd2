@@ -111,11 +111,42 @@ function getRequestData(req: Request) {
   return req.body || {};
 }
 
-// POST /api/export/docx - Generate Native OpenXML .docx
-app.post('/api/export/docx', async (req: Request, res: Response) => {
+// In-memory task store for GET downloads (auto cleanup after 10 minutes)
+const exportTasks = new Map<string, { data: any; createdAt: number }>();
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, task] of exportTasks.entries()) {
+    if (now - task.createdAt > 10 * 60 * 1000) {
+      exportTasks.delete(id);
+    }
+  }
+}, 60 * 1000);
+
+// POST /api/export/prepare - Store payload and return taskId for GET download
+app.post('/api/export/prepare', (req: Request, res: Response) => {
   try {
     const data = getRequestData(req);
-    const { paperTitle = "2026年青岛市中考语文专项练习组卷", selectedQuestions = [], totalScore = 115, isPassageIncludedMap = {}, isAnswerIncludedMap = {} } = data;
+    const taskId = `task_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    exportTasks.set(taskId, { data, createdAt: Date.now() });
+    res.json({ ok: true, taskId });
+  } catch (err) {
+    console.error('Error in /api/export/prepare:', err);
+    res.status(500).json({ error: 'Failed to prepare export task' });
+  }
+});
+
+// GET /api/export/download-docx - GET endpoint for 100% iOS/Mobile compatible file download
+app.get('/api/export/download-docx', async (req: Request, res: Response) => {
+  try {
+    const taskId = req.query.id as string;
+    const task = exportTasks.get(taskId);
+
+    if (!task) {
+      return res.status(404).send('Download link expired or invalid');
+    }
+
+    const { paperTitle = "2026年青岛市中考语文专项练习组卷", selectedQuestions = [], totalScore = 115, isPassageIncludedMap = {}, isAnswerIncludedMap = {} } = task.data;
 
     const children: Paragraph[] = [];
 
@@ -264,11 +295,11 @@ app.post('/api/export/docx', async (req: Request, res: Response) => {
     });
 
     const buffer = await Packer.toBuffer(doc);
-
-    const filename = `${encodeURIComponent(paperTitle || '试卷')}_A4标准排版.docx`;
+    const safeAsciiFilename = "paper_A4.docx";
+    const utf8Filename = encodeURIComponent(`${paperTitle || '试卷'}_A4标准排版.docx`);
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"; filename*=UTF-8''${filename}`);
+    res.setHeader('Content-Disposition', `attachment; filename="${safeAsciiFilename}"; filename*=UTF-8''${utf8Filename}`);
     res.send(buffer);
   } catch (error) {
     console.error('Error generating docx:', error);
@@ -276,11 +307,17 @@ app.post('/api/export/docx', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/export/pdf - Native A4 HTML Print Response
-app.post('/api/export/pdf', (req: Request, res: Response) => {
+// GET /api/export/download-pdf - GET endpoint for A4 PDF Print Window
+app.get('/api/export/download-pdf', (req: Request, res: Response) => {
   try {
-    const data = getRequestData(req);
-    const { paperTitle = "2026年青岛市中考语文专项练习组卷", selectedQuestions = [], totalScore = 115, isPassageIncludedMap = {}, isAnswerIncludedMap = {} } = data;
+    const taskId = req.query.id as string;
+    const task = exportTasks.get(taskId);
+
+    if (!task) {
+      return res.status(404).send('Print link expired or invalid');
+    }
+
+    const { paperTitle = "2026年青岛市中考语文专项练习组卷", selectedQuestions = [], totalScore = 115, isPassageIncludedMap = {}, isAnswerIncludedMap = {} } = task.data;
 
     let html = `<!DOCTYPE html>
 <html>
