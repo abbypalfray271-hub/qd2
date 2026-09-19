@@ -1,4 +1,4 @@
-# 🛠️ 语文试卷高保真解析与Web应用沉淀工作流 Skill 规范 (v5.3)
+# 🛠️ 语文试卷高保真解析与Web应用沉淀工作流 Skill 规范 (v5.4)
 
 本 Skill 规范总结自 2018–2025 年青岛中考语文真题（特别是 2019/2020/2021 年真题实战审核）的提炼与排错沉淀，指导中考/高考语文试题（包含 `.docx` 原始文档）的 **100% 全真无损复刻、结构化解析、Web 平台部署与分项题库沉淀**。
 
@@ -62,12 +62,25 @@
 
 ---
 
+### 9. 🚫 Markdown 语法符号严禁裸露污染与原生 HTML 语义化加粗标准 (Strict Prevention of Markdown Asterisk Leaks & Native HTML Semantic Bold Standard)
+* **经验痛点（总结自 2026 年青岛真题研学日志大题审核）**：
+  在结构化提取语段小标题或题干文本时（如 `第一部分【青岛概述】`），若直接套用 Markdown 语法的双星号 `**小标题**`，因前端 Web 题库容器与试卷排版系统通过 `dangerouslySetInnerHTML` 渲染，默认未包含 Markdown 粗体转换器，导致界面直接将双星号作为普通文本原样输出为 `**第一部分【青岛概述】**`，破坏了与真实 Word 考卷一致的排版。
+* **物理防漏与格式沉淀双保险标准**：
+  1. **数据源铁律**：所有落盘至 JSON 数据库及 `exams_data.json` 的语段小标题、重点粗体文字，**一律强制使用原生 HTML 语义标签 `<b>小标题</b>`（或 `<strong>`），绝对严禁在 JSON 数据源中留存裸露的 Markdown 双星号 `**`**；
+  2. **前端架构层双重防御门禁**：在前端渲染器（`App.tsx` 的 `renderPassage` 与 `utils.ts` 的 `cleanStem`）中强制部署正则转换门禁：
+     ```typescript
+     content = content.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+     ```
+     实现“数据源源头纯净化 + 渲染层全量兜底拦截”的双保险防御体系。
+
+---
+
 ## 🛠️ 标准自动化解析与部署流水线 (Standard Deployment Pipeline)
 
 ```mermaid
 flowchart TD
     A[Raw试卷 Word .docx] --> B[1. 解包 media/ 目录并自动转码 WMF -> PNG 嵌入试题]
-    B --> C[2. 物理级解包 Word Native XML Runs 提取 <u> 与 选项级 span.dot-char]
+    B --> C[2. 物理级解包 Word Native XML Runs 提取 <u>、<b> 与 选项级 span.dot-char]
     C --> D[3. 纯净隔离背景材料 & 1:1 全量广播阅读文章至每个子题卡片]
     D --> E[4. 对齐一级板块 section_title 与二级细分子目录 group_title 目录树]
     E --> F[5. 1:1 完整还原写作大题导语、题目、材料诗歌及 600 字要求]
@@ -82,4 +95,4 @@ flowchart TD
 
 ---
 
-*版本：v5.3 (阅读大题【一级板块 section_title】与【二级细分子目录 group_title】两级目录双层联动规则) | 维护人：Antigravity Agentic Chinese Exam Team*
+*版本：v5.4 (标题 Markdown 符号外露阻断与原生 HTML 语义加粗双重防御规范) | 维护人：Antigravity Agentic Chinese Exam Team*

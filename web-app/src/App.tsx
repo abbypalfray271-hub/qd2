@@ -81,6 +81,7 @@ const RichContent: React.FC<{ content?: string }> = ({ content }) => {
     .replace(/^#\s+.*?\n/g, '')
     .replace(/^>\s+📌\s+\*\*试题标定\*\*.*?\n/g, '')
     .replace(/---/g, '')
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
     .replace(/<b>青岛市.*?语文试题<\/b>/gi, '');
 
   // Transform Markdown images ![图片](/images/folder/img.png) or ![图片](../images/folder/img.png) into <img src="/images/folder/img.png" />
