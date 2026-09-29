@@ -14,18 +14,11 @@ import {
   Bookmark,
   Eye,
   CheckSquare,
-  Square,
-  Download
+  Square
 } from 'lucide-react';
 import type { Exam, ActiveTab } from './types';
 import { cleanStem } from './utils';
 
-// Original Exam PDF Direct Download Map
-const ORIGINAL_PDF_MAP: Record<string, string> = {
-  'exam_2026_licang_mock1': '/青岛中考试题2026/2026年山东省青岛市李沧区中考一模语文试题（含答案解析）.pdf',
-  'exam_2026_jimo_mock1': '/青岛中考试题2026/2026年山东青岛市即墨区中考一模语文试题（含答案解析）.pdf',
-  'exam_2026_shibei_mock2': '/青岛中考试题2026/2026年山东青岛市市北区中考二模语文试题（含答案解析）.pdf'
-};
 
 const parseMarkdownTables = (input: string): string => {
   if (!input || !input.includes('|')) return input;
@@ -530,30 +523,6 @@ export function App() {
                       <Eye className="w-4 h-4" /> 查看全卷
                     </button>
 
-                    {ORIGINAL_PDF_MAP[exam.id] && (
-                      <a 
-                        href={ORIGINAL_PDF_MAP[exam.id]} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="action-btn"
-                        style={{
-                          padding: '0.45rem 0.65rem',
-                          fontSize: '0.85rem',
-                          background: '#f0fdf4',
-                          color: '#15803d',
-                          borderColor: '#86efac',
-                          fontWeight: 600,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.3rem',
-                          textDecoration: 'none'
-                        }}
-                      >
-                        <Download className="w-4 h-4 text-emerald-600" />
-                        <span>原卷PDF</span>
-                      </a>
-                    )}
-
                     {/* 勾选项: 下载 */}
                     {(() => {
                       const isCartActive = isExamFullyInCart(exam);
@@ -842,31 +811,6 @@ export function App() {
                     {modalShowAnswers ? <CheckSquare className="w-3.5 h-3.5 text-emerald-600" /> : <Square className="w-3.5 h-3.5 text-slate-400" />}
                     <span>答案/解析</span>
                   </label>
-
-                  {ORIGINAL_PDF_MAP[viewingExam.id] && (
-                    <a
-                      href={ORIGINAL_PDF_MAP[viewingExam.id]}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.25rem',
-                        fontSize: '0.82rem',
-                        fontWeight: 600,
-                        color: '#15803d',
-                        background: '#f0fdf4',
-                        padding: '0.35rem 0.75rem',
-                        borderRadius: '20px',
-                        border: '1px solid #86efac',
-                        textDecoration: 'none',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <Download className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>原卷PDF</span>
-                    </a>
-                  )}
 
                   <button onClick={() => setViewingExam(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.4rem', borderRadius: '6px', marginLeft: '0.25rem' }}>
                     <X className="w-5 h-5 text-slate-500" />
