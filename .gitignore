@@ -3,9 +3,10 @@ node_modules
 .pnpm-store
 
 # Build outputs
-dist
-dist-ssr
-*.local
+# (Production server relies on pre-built dist)
+!web-app/dist/**
+!server/dist/**
+
 
 # Logs & temp
 *.log
@@ -19,3 +20,6 @@ Thumbs.db
 # Raw source assets
 raw/
 
+
+__pycache__/
+*.pyc

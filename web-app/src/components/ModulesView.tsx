@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Exam, Question } from '../types';
-import { cleanStem } from '../utils';
+import { cleanStem, cleanPassage } from '../utils';
 import { CheckSquare, Square, Eye, EyeOff, Search, Sparkles, Filter, CheckCircle2, XCircle, ShoppingCart, ArrowRight, LayoutGrid, List, Hash, X } from 'lucide-react';
 
 interface ModulesViewProps {
@@ -717,7 +717,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
                     <div style={{ fontWeight: 700, color: '#0284c7', fontSize: '0.9rem', marginBottom: '0.5rem' }}>📖 【阅读语段 / 背景材料】</div>
                     <div
                       style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '2.2', whiteSpace: 'pre-wrap' }}
-                      dangerouslySetInnerHTML={{ __html: q.passage }}
+                      dangerouslySetInnerHTML={{ __html: cleanPassage(q.passage) }}
                     />
                   </div>
                 )}
@@ -827,7 +827,7 @@ export const ModulesView: React.FC<ModulesViewProps> = ({ examsData, selectedQKe
               {previewItem.question.passage && (
                 <div className="passage-box" style={{ background: '#f8fafc', borderLeft: '4px solid #0284c7', padding: '1rem', borderRadius: '6px', marginBottom: '1rem' }}>
                   <div style={{ fontWeight: 700, color: '#0284c7', fontSize: '0.9rem', marginBottom: '0.5rem' }}>📖 【阅读语段 / 背景材料】</div>
-                  <div style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '2.2', whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: previewItem.question.passage }} />
+                  <div style={{ color: '#334155', fontSize: '0.95rem', lineHeight: '2.2', whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: cleanPassage(previewItem.question.passage) }} />
                 </div>
               )}
 
