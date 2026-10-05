@@ -132,16 +132,28 @@ export const CartView: React.FC<CartViewProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      if (!res.ok) {
+        throw new Error(`服务响应异常 (HTTP ${res.status})`);
+      }
       const data = await res.json();
       if (data.taskId) {
-        // Trigger GET request navigation - 100% pops native iOS Safari / Chrome download prompt
-        window.location.href = `/api/export/download-docx?id=${data.taskId}`;
+        // 使用原生带 .docx 后缀的真实 HTTP 直链触发下载，完全杜绝浏览器沙箱将 Blob 降级为无后缀 UUID 文件
+        const cleanTitle = (paperTitle || '青岛中考语文专项练习组卷').replace(/[\\/:*?"<>|]/g, '_');
+        const filename = `${cleanTitle}_A4标准排版.docx`;
+        const downloadUrl = `/api/export/download-docx/${encodeURIComponent(filename)}?id=${data.taskId}`;
+
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       } else {
         alert('准备导出任务失败，请重试');
       }
     } catch (err) {
       console.error("Export error:", err);
-      alert('导出请求失败，请检查网络设置');
+      alert('⚠️ 导出服务连接失败！\n\n请确认是否已运行项目根目录下的【启动后端服务.bat】（Port 3001）。');
     }
   };
 
@@ -170,6 +182,9 @@ export const CartView: React.FC<CartViewProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      if (!res.ok) {
+        throw new Error(`服务响应异常 (HTTP ${res.status})`);
+      }
       const data = await res.json();
       if (data.taskId) {
         window.open(`/api/export/download-pdf?id=${data.taskId}`, '_blank');
@@ -178,7 +193,7 @@ export const CartView: React.FC<CartViewProps> = ({
       }
     } catch (err) {
       console.error("Print error:", err);
-      alert('打印请求失败，请检查网络设置');
+      alert('⚠️ 打印导出服务连接失败！\n\n请确认是否已运行项目根目录下的【启动后端服务.bat】（Port 3001）。');
     }
   };
 
@@ -312,7 +327,7 @@ export const CartView: React.FC<CartViewProps> = ({
                   onClick={handleExportA4Word}
                   style={{ background: '#10b981', borderColor: '#10b981', padding: '0.6rem 1.2rem' }}
                 >
-                  <FileSpreadsheet className="w-4 h-4" /> 📥 导出 A4 Word (.doc)
+                  <FileSpreadsheet className="w-4 h-4" /> 📥 导出 A4 Word (.docx)
                 </button>
                 <button
                   className="action-btn action-btn-primary"

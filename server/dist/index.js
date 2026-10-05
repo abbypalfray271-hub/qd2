@@ -158,8 +158,8 @@ app.post('/api/export/prepare', (req, res) => {
         res.status(500).json({ error: 'Failed to prepare export task' });
     }
 });
-// GET /api/export/download-docx - GET endpoint for 100% iOS/Mobile compatible file download
-app.get('/api/export/download-docx', async (req, res) => {
+// GET /api/export/download-docx & /api/export/download-docx/:filename - 原生带扩展名直链下载支持
+app.get(['/api/export/download-docx', '/api/export/download-docx/:filename'], async (req, res) => {
     try {
         const taskId = req.query.id;
         const task = exportTasks.get(taskId);
@@ -296,11 +296,15 @@ app.get('/api/export/download-docx', async (req, res) => {
             ]
         });
         const buffer = await docx_1.Packer.toBuffer(doc);
+        const paramFilename = Array.isArray(req.params.filename) ? req.params.filename[0] : req.params.filename;
+        const customName = paramFilename ? decodeURIComponent(paramFilename) : `${paperTitle || '试卷'}_A4标准排版.docx`;
+        const cleanFilename = customName.endsWith('.docx') ? customName : `${customName}.docx`;
         const safeAsciiFilename = "paper_A4.docx";
-        const utf8Filename = encodeURIComponent(`${paperTitle || '试卷'}_A4标准排版.docx`);
+        const utf8Filename = encodeURIComponent(cleanFilename);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Length', String(buffer.length));
         res.setHeader('Content-Disposition', `attachment; filename="${safeAsciiFilename}"; filename*=UTF-8''${utf8Filename}`);
-        res.send(buffer);
+        res.end(buffer);
     }
     catch (error) {
         console.error('Error generating docx:', error);

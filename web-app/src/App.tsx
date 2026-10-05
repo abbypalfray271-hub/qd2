@@ -19,7 +19,6 @@ import {
 import type { Exam, ActiveTab } from './types';
 import { cleanStem } from './utils';
 
-
 const parseMarkdownTables = (input: string): string => {
   if (!input || !input.includes('|')) return input;
 
@@ -227,11 +226,11 @@ export function App() {
 
   // Unique Filter Options
   const years = ['全部', '2026年', '2025年', '2024年', '2023年', '2022年', '2021年', '2020年', '2019年', '2018年'];
-  const districts = ['全部', '青岛市级', '市南区', '市北区', '李沧区', '崂山区', '黄岛区', '城阳区', '即墨区', '平度市', '莱西市'];
+  const districts = ['全部', '青岛市级', '市南区', '市北区', '李沧区', '崂山区', '黄岛区', '城阳区', '即墨区', '胶州市', '平度市', '莱西市'];
 
-  // Async data fetching with cache buster
+  // Async data fetching
   useEffect(() => {
-    fetch(`/data/exams_data.json?v=${Date.now()}`)
+    fetch('/data/exams_data.json')
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
